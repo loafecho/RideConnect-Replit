@@ -37,7 +37,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/timeslots/:date", async (req, res) => {
     try {
       const { date } = req.params;
-      const slots = await storage.getTimeSlotsByDate(date);
+      let slots = await storage.getTimeSlotsByDate(date);
+      
+      // If no time slots exist, create default ones for today and future dates
+      if (slots.length === 0) {
+        const requestedDate = new Date(date + 'T00:00:00');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time to beginning of day
+        
+        // Only create slots for today or future dates
+        if (requestedDate >= today) {
+          const defaultSlots = [];
+          
+          // Create slots from 3 PM to 11 PM PT in 15-minute increments
+          for (let hour = 15; hour < 23; hour++) {
+            for (let minute = 0; minute < 60; minute += 15) {
+              const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+              const endHour = minute === 45 ? hour + 1 : hour;
+              const endMinute = minute === 45 ? 0 : minute + 15;
+              const endTimeString = `${endHour.toString().padStart(2, '0')}:${endMinute.toString().padStart(2, '0')}`;
+              
+              defaultSlots.push({
+                date,
+                startTime: timeString,
+                endTime: endTimeString,
+                isAvailable: true
+              });
+            }
+          }
+          
+          // Create all default slots in the database
+          for (const slot of defaultSlots) {
+            await storage.createTimeSlot(slot);
+          }
+          
+          // Fetch the newly created slots
+          slots = await storage.getTimeSlotsByDate(date);
+        }
+      }
+      
       res.json(slots);
     } catch (error: any) {
       res.status(500).json({ message: "Error fetching time slots: " + error.message });

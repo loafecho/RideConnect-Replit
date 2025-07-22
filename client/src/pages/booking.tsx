@@ -57,10 +57,7 @@ export default function Booking() {
     enabled: !!selectedDate,
   });
 
-  // Fetch user's bookings
-  const { data: bookings = [] } = useQuery({
-    queryKey: ["/api/bookings"],
-  });
+  // Remove the bookings query since regular users don't need to see all bookings
 
   // Create booking mutation
   const createBookingMutation = useMutation({
@@ -327,50 +324,7 @@ export default function Booking() {
           </CardContent>
         </Card>
 
-        {/* Recent Bookings */}
-        {(bookings as any[]).length > 0 && (
-          <div className="mt-12">
-            <h3 className="text-2xl font-bold text-slate-900 mb-6">Your Recent Bookings</h3>
-            <div className="space-y-4">
-              {(bookings as any[]).slice(0, 3).map((booking: any) => (
-                <Card key={booking.id} className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                            booking.status === 'confirmed' 
-                              ? 'bg-green-100 text-green-800' 
-                              : booking.status === 'pending'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                          </span>
-                          <span className="text-sm text-slate-500">{booking.date}</span>
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex items-center text-slate-700">
-                            <MapPin className="mr-2 text-green-500" size={16} />
-                            <span>{booking.pickupLocation}</span>
-                          </div>
-                          <div className="flex items-center text-slate-700">
-                            <MapPin className="mr-2 text-red-500" size={16} />
-                            <span>{booking.dropoffLocation}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-xl font-bold text-slate-900">${booking.estimatedPrice}</div>
-                        <div className="text-sm text-slate-500">{booking.timeSlot}</div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
+
       </div>
     </div>
   );
