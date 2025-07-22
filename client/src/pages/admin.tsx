@@ -25,22 +25,6 @@ export default function Admin() {
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const queryClient = useQueryClient();
-  const { isAuthenticated, isLoading } = useAuth();
-
-  // Redirect to home if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, isLoading, toast]);
 
   const form = useForm<TimeSlotFormData>({
     resolver: zodResolver(insertTimeSlotSchema),
@@ -76,17 +60,6 @@ export default function Admin() {
       queryClient.invalidateQueries({ queryKey: ["/api/timeslots"] });
     },
     onError: (error: any) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
       toast({
         title: "Failed to create time slot",
         description: error.message,
@@ -103,17 +76,6 @@ export default function Admin() {
       queryClient.invalidateQueries({ queryKey: ["/api/timeslots"] });
     },
     onError: (error: any) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
       toast({
         title: "Failed to delete time slot",
         description: error.message,
@@ -131,17 +93,6 @@ export default function Admin() {
       queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
     },
     onError: (error: any) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
       toast({
         title: "Failed to update booking",
         description: error.message,

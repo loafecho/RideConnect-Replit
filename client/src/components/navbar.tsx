@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 export default function Navbar() {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
 
   const getNavItems = () => {
     if (isAuthenticated) {
@@ -54,7 +54,7 @@ export default function Navbar() {
               ))}
               {isAuthenticated ? (
                 <Button 
-                  onClick={() => window.location.href = "/api/logout"}
+                  onClick={logout}
                   variant="outline" 
                   className="border-slate-300 text-slate-600 hover:bg-slate-50"
                 >
@@ -62,12 +62,11 @@ export default function Navbar() {
                   Sign Out
                 </Button>
               ) : (
-                <Button 
-                  onClick={() => window.location.href = "/api/login"}
-                  className="gradient-purple-blue text-white hover:from-purple-600 hover:to-blue-600"
-                >
-                  Admin Sign In
-                </Button>
+                <Link href="/admin">
+                  <Button className="gradient-purple-blue text-white hover:from-purple-600 hover:to-blue-600">
+                    Admin Sign In
+                  </Button>
+                </Link>
               )}
             </div>
           </div>
@@ -107,7 +106,7 @@ export default function Navbar() {
                 <Button 
                   onClick={() => {
                     setIsMobileMenuOpen(false);
-                    window.location.href = "/api/logout";
+                    logout();
                   }}
                   variant="outline" 
                   className="w-full border-slate-300 text-slate-600 hover:bg-slate-50"
@@ -116,15 +115,14 @@ export default function Navbar() {
                   Sign Out
                 </Button>
               ) : (
-                <Button 
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    window.location.href = "/api/login";
-                  }}
-                  className="w-full gradient-purple-blue text-white hover:from-purple-600 hover:to-blue-600"
-                >
-                  Admin Sign In
-                </Button>
+                <Link href="/admin">
+                  <Button 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="w-full gradient-purple-blue text-white hover:from-purple-600 hover:to-blue-600"
+                  >
+                    Admin Sign In
+                  </Button>
+                </Link>
               )}
             </div>
           </div>

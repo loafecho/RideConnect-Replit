@@ -9,6 +9,7 @@ import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import Booking from "@/pages/booking";
 import Admin from "@/pages/admin";
+import AdminLogin from "@/pages/admin-login";
 import Checkout from "@/pages/checkout";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
@@ -25,7 +26,7 @@ function Router() {
             <>
               <Route path="/" component={Landing} />
               <Route path="/booking" component={Booking} />
-              <Route path="/admin" component={Admin} />
+              <Route path="/admin" component={AdminLogin} />
               <Route path="/checkout/:bookingId?" component={Checkout} />
               <Route component={NotFound} />
             </>

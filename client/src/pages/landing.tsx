@@ -1,6 +1,7 @@
 import { Car, Clock, Shield, Star, ArrowRight, CheckCircle, MapPin, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Link } from "wouter";
 
 export default function Landing() {
   return (
@@ -30,19 +31,19 @@ export default function Landing() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
-                <a href="/booking" className="flex items-center">
+              <Link href="/booking">
+                <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
                   Book a Ride Now
                   <ArrowRight className="ml-2" size={20} />
-                </a>
-              </Button>
+                </Button>
+              </Link>
               
-              <Button variant="outline" size="lg" className="border-slate-400 text-white hover:bg-white hover:text-slate-900 px-8 py-4 text-lg rounded-xl">
-                <a href="/api/login" className="flex items-center">
+              <Link href="/admin">
+                <Button variant="outline" size="lg" className="border-slate-400 text-white hover:bg-white hover:text-slate-900 px-8 py-4 text-lg rounded-xl">
                   Admin Login
                   <Shield className="ml-2" size={20} />
-                </a>
-              </Button>
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -158,12 +159,12 @@ export default function Landing() {
             Book your first ride today and discover the difference of having a personal driver.
           </p>
           
-          <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-12 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
-            <a href="/booking" className="flex items-center">
+          <Link href="/booking">
+            <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-12 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
               Get Started Now
               <ArrowRight className="ml-2" size={20} />
-            </a>
-          </Button>
+            </Button>
+          </Link>
         </div>
       </section>
     </div>
