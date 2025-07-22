@@ -185,7 +185,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Stripe payment route for ride payments
   app.post("/api/create-payment-intent", async (req, res) => {
     try {
+      console.log("Creating payment intent with body:", req.body);
       const { amount, bookingId } = req.body;
+      
+      if (!amount) {
+        return res.status(400).json({ message: "Amount is required" });
+      }
+      
       const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(parseFloat(amount) * 100), // Convert to cents
         currency: "usd",
@@ -193,8 +199,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           bookingId: bookingId?.toString() || '',
         },
       });
+      
+      console.log("Payment intent created successfully:", paymentIntent.id);
       res.json({ clientSecret: paymentIntent.client_secret });
     } catch (error: any) {
+      console.error("Stripe error:", error);
       res.status(500).json({ message: "Error creating payment intent: " + error.message });
     }
   });
