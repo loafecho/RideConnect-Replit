@@ -11,8 +11,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { insertBookingSchema } from "@shared/schema";
-import { MapPin, Clock, Users, Plus, Minus, Route, CreditCard } from "lucide-react";
+import { MapPin, Clock, Users, Plus, Minus, Route, CreditCard, CalendarDays } from "lucide-react";
 import { useLocation } from "wouter";
+
+// Helper function to convert 24-hour time to 12-hour format
+const formatTime12Hour = (time24: string) => {
+  const [hours, minutes] = time24.split(':').map(Number);
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const hours12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+  return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
+};
 
 type BookingFormData = {
   customerName: string;
@@ -210,14 +218,16 @@ export default function Booking() {
                 {/* Date and Time Selection */}
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center">
-                      📅 Date
+                    <label className="block text-sm font-medium text-slate-700 mb-3 flex items-center">
+                      <CalendarDays className="mr-2 text-blue-500" size={16} />
+                      Select Date
                     </label>
                     <Input
                       type="date"
                       value={selectedDate}
                       onChange={(e) => setSelectedDate(e.target.value)}
                       min={new Date().toISOString().split('T')[0]}
+                      className="h-12 text-slate-700 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-slate-200 focus:border-purple-400 focus:from-purple-50 focus:to-blue-50 transition-all duration-200"
                     />
                   </div>
                   <FormField
@@ -231,16 +241,31 @@ export default function Booking() {
                         </FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder={slotsLoading ? "Loading slots..." : "Select time slot"} />
+                            <SelectTrigger className="h-12 text-left">
+                              <SelectValue placeholder={slotsLoading ? "⏳ Loading available times..." : "🕐 Choose your preferred time"} />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent className="max-h-60">
                             {(timeSlots as any[])?.filter((slot: any) => slot.isAvailable).map((slot: any) => (
-                              <SelectItem key={slot.id} value={`${slot.startTime}-${slot.endTime}`}>
-                                {slot.startTime} - {slot.endTime}
+                              <SelectItem 
+                                key={slot.id} 
+                                value={`${slot.startTime}-${slot.endTime}`}
+                                className="flex items-center justify-between py-3 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50"
+                              >
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                                  <span className="font-medium text-slate-700">
+                                    {formatTime12Hour(slot.startTime)} - {formatTime12Hour(slot.endTime)}
+                                  </span>
+                                </div>
                               </SelectItem>
                             )) || []}
+                            {!slotsLoading && (!timeSlots || (timeSlots as any[]).length === 0) && (
+                              <div className="py-4 text-center text-slate-500">
+                                <Clock className="mx-auto mb-2 text-slate-400" size={24} />
+                                <p>No time slots available for this date</p>
+                              </div>
+                            )}
                           </SelectContent>
                         </Select>
                         <FormMessage />
