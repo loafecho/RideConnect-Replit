@@ -14,6 +14,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Gauge, CalendarX2, List, TrendingUp, Car, DollarSign, Clock, BarChart3, Plus, Trash2 } from "lucide-react";
 
+// Helper function to convert 24-hour time to 12-hour format
+const formatTime12Hour = (time24: string) => {
+  const [hours, minutes] = time24.split(':').map(Number);
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const hours12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+  return `${hours12}:${minutes.toString().padStart(2, '0')}${period}`;
+};
+
 type TimeSlotFormData = {
   date: string;
   startTime: string;
@@ -189,26 +197,30 @@ export default function Admin() {
               </div>
 
               {/* Time Slots */}
-              <div className="space-y-3 mb-6">
+              <div className="mb-6">
                 <h4 className="font-medium text-slate-900 mb-3">Available Time Slots</h4>
-                {(timeSlots as any[]).map((slot: any) => (
-                  <div key={slot.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <Checkbox checked={slot.isAvailable} />
-                      <span className="font-medium text-slate-700">
-                        {slot.startTime} - {slot.endTime}
-                      </span>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  {(timeSlots as any[]).map((slot: any) => (
+                    <div key={slot.id} className="relative group">
+                      <div className="flex items-center justify-between p-2 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg hover:shadow-md transition-all">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                          <span className="text-sm font-medium text-slate-700">
+                            {formatTime12Hour(slot.startTime)}
+                          </span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteSlotMutation.mutate(slot.id)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-6 w-6 text-red-500 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 size={12} />
+                        </Button>
+                      </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => deleteSlotMutation.mutate(slot.id)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <Trash2 size={16} />
-                    </Button>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
 
               {/* Add New Slot */}
