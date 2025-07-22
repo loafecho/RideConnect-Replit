@@ -1,13 +1,30 @@
-import { pgTable, text, serial, integer, boolean, timestamp, decimal } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, decimal, varchar, jsonb, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Session storage table.
+// (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
+
+// User storage table.
+// (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-  email: text("email"),
+  id: varchar("id").primaryKey().notNull(),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
   isAdmin: boolean("is_admin").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const timeSlots = pgTable("time_slots", {
@@ -35,12 +52,8 @@ export const bookings = pgTable("bookings", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Insert schemas
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-  email: true,
-});
+export type UpsertUser = typeof users.$inferInsert;
+export type User = typeof users.$inferSelect;
 
 export const insertTimeSlotSchema = createInsertSchema(timeSlots).omit({
   id: true,
@@ -62,8 +75,6 @@ export const insertBookingSchema = createInsertSchema(bookings).omit({
 });
 
 // Types
-export type User = typeof users.$inferSelect;
-export type InsertUser = z.infer<typeof insertUserSchema>;
 export type TimeSlot = typeof timeSlots.$inferSelect;
 export type InsertTimeSlot = z.infer<typeof insertTimeSlotSchema>;
 export type Booking = typeof bookings.$inferSelect;

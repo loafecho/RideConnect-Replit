@@ -1,9 +1,11 @@
-import { users, timeSlots, bookings, type User, type InsertUser, type TimeSlot, type InsertTimeSlot, type Booking, type InsertBooking } from "@shared/schema";
+import { users, timeSlots, bookings, type User, type UpsertUser, type TimeSlot, type InsertTimeSlot, type Booking, type InsertBooking } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
-  getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  // User operations (IMPORTANT for Replit Auth)
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
   
   // Time slot management
   getTimeSlotsByDate(date: string): Promise<TimeSlot[]>;
@@ -19,146 +21,79 @@ export interface IStorage {
   getBookingsByDate(date: string): Promise<Booking[]>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private timeSlots: Map<number, TimeSlot>;
-  private bookings: Map<number, Booking>;
-  private currentUserId: number;
-  private currentTimeSlotId: number;
-  private currentBookingId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.timeSlots = new Map();
-    this.bookings = new Map();
-    this.currentUserId = 1;
-    this.currentTimeSlotId = 1;
-    this.currentBookingId = 1;
-
-    // Create default admin user
-    this.createUser({
-      username: "admin",
-      password: "admin123",
-      email: "admin@rideconnect.com",
-    }).then(user => {
-      this.users.set(user.id, { ...user, isAdmin: true });
-    });
-
-    // Create some default time slots for today and tomorrow
-    const today = new Date().toISOString().split('T')[0];
-    const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    
-    const defaultSlots = [
-      { date: today, startTime: "09:00", endTime: "09:30", isAvailable: true },
-      { date: today, startTime: "10:30", endTime: "11:00", isAvailable: true },
-      { date: today, startTime: "12:00", endTime: "12:30", isAvailable: true },
-      { date: today, startTime: "14:30", endTime: "15:00", isAvailable: true },
-      { date: today, startTime: "16:00", endTime: "16:30", isAvailable: true },
-      { date: today, startTime: "18:30", endTime: "19:00", isAvailable: true },
-      { date: tomorrow, startTime: "09:00", endTime: "09:30", isAvailable: true },
-      { date: tomorrow, startTime: "10:30", endTime: "11:00", isAvailable: true },
-      { date: tomorrow, startTime: "12:00", endTime: "12:30", isAvailable: true },
-      { date: tomorrow, startTime: "14:30", endTime: "15:00", isAvailable: true },
-      { date: tomorrow, startTime: "16:00", endTime: "16:30", isAvailable: true },
-      { date: tomorrow, startTime: "18:30", endTime: "19:00", isAvailable: true },
-    ];
-
-    defaultSlots.forEach(slot => {
-      this.createTimeSlot(slot);
-    });
+export class DatabaseStorage implements IStorage {
+  // User operations (IMPORTANT for Replit Auth)
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
-  async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user: User = { 
-      ...insertUser, 
-      id, 
-      isAdmin: false,
-      email: insertUser.email || null
-    };
-    this.users.set(id, user);
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
     return user;
   }
 
+  // Time slot management
   async getTimeSlotsByDate(date: string): Promise<TimeSlot[]> {
-    return Array.from(this.timeSlots.values()).filter(slot => slot.date === date);
+    return await db.select().from(timeSlots).where(eq(timeSlots.date, date));
   }
 
   async createTimeSlot(slot: InsertTimeSlot): Promise<TimeSlot> {
-    const id = this.currentTimeSlotId++;
-    const timeSlot: TimeSlot = { 
-      ...slot, 
-      id,
-      isAvailable: slot.isAvailable ?? true
-    };
-    this.timeSlots.set(id, timeSlot);
-    return timeSlot;
+    const [newSlot] = await db.insert(timeSlots).values(slot).returning();
+    return newSlot;
   }
 
   async updateTimeSlot(id: number, updates: Partial<TimeSlot>): Promise<TimeSlot | undefined> {
-    const slot = this.timeSlots.get(id);
-    if (!slot) return undefined;
-    
-    const updatedSlot = { ...slot, ...updates };
-    this.timeSlots.set(id, updatedSlot);
-    return updatedSlot;
+    const [updatedSlot] = await db
+      .update(timeSlots)
+      .set(updates)
+      .where(eq(timeSlots.id, id))
+      .returning();
+    return updatedSlot || undefined;
   }
 
   async deleteTimeSlot(id: number): Promise<boolean> {
-    return this.timeSlots.delete(id);
+    const result = await db.delete(timeSlots).where(eq(timeSlots.id, id));
+    return result.rowCount > 0;
   }
 
+  // Booking management
   async createBooking(booking: InsertBooking): Promise<Booking> {
-    const id = this.currentBookingId++;
-    const newBooking: Booking = { 
-      ...booking, 
-      id, 
-      createdAt: new Date(),
-      paymentIntentId: null,
-      status: booking.status || "pending",
-      customerPhone: booking.customerPhone || null,
-      notes: booking.notes || null
-    };
-    this.bookings.set(id, newBooking);
+    const [newBooking] = await db.insert(bookings).values(booking).returning();
     return newBooking;
   }
 
   async getBookings(): Promise<Booking[]> {
-    return Array.from(this.bookings.values()).sort(
-      (a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0)
-    );
+    return await db.select().from(bookings).orderBy(desc(bookings.createdAt));
   }
 
   async getBookingById(id: number): Promise<Booking | undefined> {
-    return this.bookings.get(id);
+    const [booking] = await db.select().from(bookings).where(eq(bookings.id, id));
+    return booking || undefined;
   }
 
   async updateBookingStatus(id: number, status: string, paymentIntentId?: string): Promise<Booking | undefined> {
-    const booking = this.bookings.get(id);
-    if (!booking) return undefined;
-    
-    const updatedBooking = { 
-      ...booking, 
-      status, 
-      paymentIntentId: paymentIntentId || null 
-    };
-    this.bookings.set(id, updatedBooking);
-    return updatedBooking;
+    const [updatedBooking] = await db
+      .update(bookings)
+      .set({ status, paymentIntentId })
+      .where(eq(bookings.id, id))
+      .returning();
+    return updatedBooking || undefined;
   }
 
   async getBookingsByDate(date: string): Promise<Booking[]> {
-    return Array.from(this.bookings.values()).filter(booking => booking.date === date);
+    return await db.select().from(bookings).where(eq(bookings.date, date));
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

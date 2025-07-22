@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
 import { insertBookingSchema, insertTimeSlotSchema } from "@shared/schema";
+import { setupAuth, isAuthenticated, isAdmin } from "./replitAuth";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
@@ -13,6 +14,20 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Auth middleware
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
   
   // Get time slots for a specific date
   app.get("/api/timeslots/:date", async (req, res) => {
@@ -25,8 +40,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create new time slot (admin)
-  app.post("/api/timeslots", async (req, res) => {
+  // Create new time slot (admin only)
+  app.post("/api/timeslots", isAdmin, async (req, res) => {
     try {
       const validatedData = insertTimeSlotSchema.parse(req.body);
       const slot = await storage.createTimeSlot(validatedData);
@@ -36,8 +51,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update time slot availability (admin)
-  app.patch("/api/timeslots/:id", async (req, res) => {
+  // Update time slot availability (admin only)
+  app.patch("/api/timeslots/:id", isAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const slot = await storage.updateTimeSlot(id, req.body);
@@ -50,8 +65,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete time slot (admin)
-  app.delete("/api/timeslots/:id", async (req, res) => {
+  // Delete time slot (admin only)
+  app.delete("/api/timeslots/:id", isAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const deleted = await storage.deleteTimeSlot(id);
@@ -75,8 +90,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all bookings
-  app.get("/api/bookings", async (req, res) => {
+  // Get all bookings (admin only)
+  app.get("/api/bookings", isAdmin, async (req, res) => {
     try {
       const bookings = await storage.getBookings();
       res.json(bookings);
@@ -96,8 +111,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update booking status
-  app.patch("/api/bookings/:id/status", async (req, res) => {
+  // Update booking status (admin only)
+  app.patch("/api/bookings/:id/status", isAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const { status, paymentIntentId } = req.body;

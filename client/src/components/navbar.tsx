@@ -1,17 +1,29 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Navbar() {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isAuthenticated, user } = useAuth();
 
-  const navItems = [
-    { href: "/", label: "Home" },
-    { href: "/booking", label: "Book Now" },
-    { href: "/admin", label: "Admin" },
-  ];
+  const getNavItems = () => {
+    if (isAuthenticated) {
+      return [
+        { href: "/", label: "Dashboard" },
+        { href: "/booking", label: "Book Now" },
+        { href: "/admin", label: "Admin" },
+      ];
+    }
+    return [
+      { href: "/", label: "Home" },
+      { href: "/booking", label: "Book Now" },
+    ];
+  };
+
+  const navItems = getNavItems();
 
   return (
     <nav className="bg-white/95 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-50">
@@ -28,19 +40,35 @@ export default function Navbar() {
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
               {navItems.map((item) => (
-                <Link key={item.href} href={item.href}>
-                  <a className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                <Link 
+                  key={item.href} 
+                  href={item.href}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     location === item.href
                       ? "text-blue-600"
                       : "text-slate-600 hover:text-blue-600"
-                  }`}>
-                    {item.label}
-                  </a>
+                  }`}
+                >
+                  {item.label}
                 </Link>
               ))}
-              <Button className="gradient-purple-blue text-white hover:from-purple-600 hover:to-blue-600">
-                Sign In
-              </Button>
+              {isAuthenticated ? (
+                <Button 
+                  onClick={() => window.location.href = "/api/logout"}
+                  variant="outline" 
+                  className="border-slate-300 text-slate-600 hover:bg-slate-50"
+                >
+                  <LogOut size={16} className="mr-2" />
+                  Sign Out
+                </Button>
+              ) : (
+                <Button 
+                  onClick={() => window.location.href = "/api/login"}
+                  className="gradient-purple-blue text-white hover:from-purple-600 hover:to-blue-600"
+                >
+                  Admin Sign In
+                </Button>
+              )}
             </div>
           </div>
           
@@ -61,19 +89,44 @@ export default function Navbar() {
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-b">
             {navItems.map((item) => (
-              <Link key={item.href} href={item.href}>
-                <a 
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    location === item.href
-                      ? "text-blue-600 bg-blue-50"
-                      : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {item.label}
-                </a>
+              <Link 
+                key={item.href} 
+                href={item.href}
+                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  location === item.href
+                    ? "text-blue-600 bg-blue-50"
+                    : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
+                }`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {item.label}
               </Link>
             ))}
+            <div className="pt-4 pb-2">
+              {isAuthenticated ? (
+                <Button 
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    window.location.href = "/api/logout";
+                  }}
+                  variant="outline" 
+                  className="w-full border-slate-300 text-slate-600 hover:bg-slate-50"
+                >
+                  <LogOut size={16} className="mr-2" />
+                  Sign Out
+                </Button>
+              ) : (
+                <Button 
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    window.location.href = "/api/login";
+                  }}
+                  className="w-full gradient-purple-blue text-white hover:from-purple-600 hover:to-blue-600"
+                >
+                  Admin Sign In
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       )}
