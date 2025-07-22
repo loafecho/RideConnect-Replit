@@ -15,6 +15,7 @@ export interface IStorage {
   
   // Booking management
   createBooking(booking: InsertBooking): Promise<Booking>;
+  getBooking(id: number): Promise<Booking | undefined>;
   getBookings(): Promise<Booking[]>;
   getBookingById(id: number): Promise<Booking | undefined>;
   updateBookingStatus(id: number, status: string, paymentIntentId?: string): Promise<Booking | undefined>;
@@ -64,13 +65,18 @@ export class DatabaseStorage implements IStorage {
 
   async deleteTimeSlot(id: number): Promise<boolean> {
     const result = await db.delete(timeSlots).where(eq(timeSlots.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   }
 
   // Booking management
   async createBooking(booking: InsertBooking): Promise<Booking> {
     const [newBooking] = await db.insert(bookings).values(booking).returning();
     return newBooking;
+  }
+
+  async getBooking(id: number): Promise<Booking | undefined> {
+    const [booking] = await db.select().from(bookings).where(eq(bookings.id, id));
+    return booking || undefined;
   }
 
   async getBookings(): Promise<Booking[]> {

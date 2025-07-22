@@ -132,6 +132,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get individual booking by ID (for checkout)
+  app.get("/api/bookings/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const booking = await storage.getBooking(id);
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+      res.json(booking);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching booking: " + error.message });
+    }
+  });
+
   // Get all bookings (admin only)
   app.get("/api/bookings", isAdmin, async (req, res) => {
     try {

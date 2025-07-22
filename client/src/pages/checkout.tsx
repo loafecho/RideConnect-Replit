@@ -151,8 +151,8 @@ export default function Checkout() {
 
   // Fetch booking details
   const { data: booking, isLoading: bookingLoading } = useQuery({
-    queryKey: ["/api/bookings"],
-    select: (bookings: any[]) => bookings.find(b => b.id === parseInt(bookingId || '0')),
+    queryKey: ["/api/bookings", bookingId],
+    queryFn: () => apiRequest("GET", `/api/bookings/${bookingId}`).then(res => res.json()),
     enabled: !!bookingId,
   });
 
