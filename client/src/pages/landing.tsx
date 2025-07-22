@@ -30,18 +30,11 @@ export default function Landing() {
               Skip the apps, skip the wait. Book rides directly with a trusted local driver for reliable, personal transportation.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex justify-center items-center">
               <Link href="/booking">
                 <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
                   Book a Ride Now
                   <ArrowRight className="ml-2" size={20} />
-                </Button>
-              </Link>
-              
-              <Link href="/admin">
-                <Button variant="outline" size="lg" className="border-slate-400 text-white hover:bg-white hover:text-slate-900 px-8 py-4 text-lg rounded-xl">
-                  Admin Login
-                  <Shield className="ml-2" size={20} />
                 </Button>
               </Link>
             </div>
