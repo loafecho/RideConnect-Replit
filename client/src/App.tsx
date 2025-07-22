@@ -22,23 +22,11 @@ function Router() {
       <Navbar />
       <main className="flex-1">
         <Switch>
-          {isLoading || !isAuthenticated ? (
-            <>
-              <Route path="/" component={Landing} />
-              <Route path="/booking" component={Booking} />
-              <Route path="/admin" component={AdminLogin} />
-              <Route path="/checkout/:bookingId?" component={Checkout} />
-              <Route component={NotFound} />
-            </>
-          ) : (
-            <>
-              <Route path="/" component={Home} />
-              <Route path="/booking" component={Booking} />
-              <Route path="/admin" component={Admin} />
-              <Route path="/checkout/:bookingId?" component={Checkout} />
-              <Route component={NotFound} />
-            </>
-          )}
+          <Route path="/" component={isAuthenticated ? Home : Landing} />
+          <Route path="/booking" component={Booking} />
+          <Route path="/admin" component={isAuthenticated ? Admin : AdminLogin} />
+          <Route path="/checkout/:bookingId?" component={Checkout} />
+          <Route component={NotFound} />
         </Switch>
       </main>
       <Footer />
