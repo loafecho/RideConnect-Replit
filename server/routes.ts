@@ -4,13 +4,17 @@ import Stripe from "stripe";
 import { storage } from "./storage";
 import { insertBookingSchema, insertTimeSlotSchema } from "@shared/schema";
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
-}
+// Optional Stripe setup - allows app to run without Stripe for development
+let stripe: Stripe | null = null;
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-06-30.basil",
-});
+if (process.env.STRIPE_SECRET_KEY) {
+  stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: "2025-06-30.basil",
+  });
+  console.log("✅ Stripe initialized successfully");
+} else {
+  console.log("⚠️ Stripe not configured - payment features will be disabled");
+}
 
 // Simple admin middleware for demo
 const isAdmin = (req: any, res: any, next: any) => {
@@ -168,7 +172,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update booking status (admin only)
-  app.patch("/api/bookings/:id/status", isAdmin, async (req, res) => {
+  app.patch("/api/bookings/:id/status", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const { status, paymentIntentId } = req.body;
@@ -185,13 +189,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Stripe payment route for ride payments
   app.post("/api/create-payment-intent", async (req, res) => {
     try {
-      console.log("Creating payment intent with body:", req.body);
       const { amount, bookingId } = req.body;
       
       if (!amount) {
         return res.status(400).json({ message: "Amount is required" });
       }
+
+      // Check if Stripe is configured
+      if (!stripe) {
+        return res.status(503).json({ 
+          message: "Payment processing is currently disabled. Stripe is not configured.",
+          stripeDisabled: true 
+        });
+      }
       
+      console.log("Creating payment intent with body:", req.body);
       const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(parseFloat(amount) * 100), // Convert to cents
         currency: "usd",

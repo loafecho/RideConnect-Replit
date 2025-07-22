@@ -12,10 +12,9 @@ import { MapPin, Clock, Users, CreditCard, CheckCircle } from "lucide-react";
 
 // Make sure to call `loadStripe` outside of a component's render to avoid
 // recreating the `Stripe` object on every render.
-if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
-  throw new Error('Missing required Stripe key: VITE_STRIPE_PUBLIC_KEY');
-}
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+const stripePromise = import.meta.env.VITE_STRIPE_PUBLIC_KEY 
+  ? loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
+  : null;
 
 const CheckoutForm = ({ booking }: { booking: any }) => {
   const stripe = useStripe();
@@ -143,6 +142,123 @@ const CheckoutForm = ({ booking }: { booking: any }) => {
   );
 };
 
+// Demo payment component for when Stripe is disabled
+const DemoCheckoutForm = ({ booking }: { booking: any }) => {
+  const { toast } = useToast();
+  const [, setLocation] = useLocation();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const queryClient = useQueryClient();
+
+  const handleDemoPayment = async () => {
+    setIsProcessing(true);
+
+    try {
+      // Simulate payment processing delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Update booking status to confirmed
+      await apiRequest("PATCH", `/api/bookings/${booking.id}/status`, { 
+        status: 'confirmed' 
+      });
+      
+      toast({
+        title: "Demo Payment Successful!",
+        description: "Your ride has been confirmed. This was a demo payment - no actual charge was made.",
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
+      setLocation('/booking');
+    } catch (err) {
+      toast({
+        title: "Demo Payment Failed",
+        description: "There was an issue processing your demo payment.",
+        variant: "destructive",
+      });
+    }
+    
+    setIsProcessing(false);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-slate-50 rounded-xl p-6">
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">Booking Summary</h3>
+        <div className="space-y-3">
+          <div className="flex items-center space-x-3">
+            <MapPin className="text-blue-500" size={16} />
+            <div>
+              <p className="text-sm text-slate-500">From</p>
+              <p className="font-medium">{booking.pickupLocation}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-3">
+            <MapPin className="text-green-500" size={16} />
+            <div>
+              <p className="text-sm text-slate-500">To</p>
+              <p className="font-medium">{booking.dropoffLocation}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-3">
+            <Clock className="text-orange-500" size={16} />
+            <div>
+              <p className="text-sm text-slate-500">Date & Time</p>
+              <p className="font-medium">{booking.date} at {booking.timeSlot}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-3">
+            <Users className="text-purple-500" size={16} />
+            <div>
+              <p className="text-sm text-slate-500">Passengers</p>
+              <p className="font-medium">{booking.passengerCount} passenger(s)</p>
+            </div>
+          </div>
+        </div>
+        
+        <Separator className="my-4" />
+        
+        <div className="flex justify-between items-center">
+          <span className="text-lg font-semibold text-slate-900">Total Amount:</span>
+          <span className="text-2xl font-bold text-green-600">${booking.estimatedPrice}</span>
+        </div>
+      </div>
+
+      <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+          <CreditCard className="mr-2" size={20} />
+          Demo Payment Mode
+        </h3>
+        <p className="text-sm text-slate-600 mb-4">
+          Stripe is currently not configured. This is a demo payment that will mark your booking as confirmed without processing any actual payment.
+        </p>
+        <div className="bg-white border rounded-lg p-4">
+          <p className="text-sm font-medium text-slate-700 mb-2">Demo Payment Details:</p>
+          <p className="text-xs text-slate-500">• No actual payment will be processed</p>
+          <p className="text-xs text-slate-500">• Your booking will be confirmed for testing</p>
+          <p className="text-xs text-slate-500">• Set up Stripe to enable real payments</p>
+        </div>
+      </div>
+
+      <Button
+        onClick={handleDemoPayment}
+        disabled={isProcessing}
+        className="w-full gradient-purple-blue text-white py-4 rounded-xl font-semibold hover:from-purple-600 hover:to-blue-600 transition-all shadow-lg h-auto"
+      >
+        {isProcessing ? (
+          "Processing Demo Payment..."
+        ) : (
+          <>
+            <CheckCircle className="mr-2" size={20} />
+            Complete Demo Payment - ${booking?.estimatedPrice}
+          </>
+        )}
+      </Button>
+    </div>
+  );
+};
+
 export default function Checkout() {
   const params = useParams();
   const bookingId = params.bookingId;
@@ -156,8 +272,10 @@ export default function Checkout() {
     enabled: !!bookingId,
   });
 
+  const [stripeDisabled, setStripeDisabled] = useState(false);
+
   useEffect(() => {
-    if (booking && !clientSecret) {
+    if (booking && !clientSecret && !stripeDisabled) {
       // Create PaymentIntent as soon as booking is loaded
       apiRequest("POST", "/api/create-payment-intent", { 
         amount: booking.estimatedPrice,
@@ -168,14 +286,19 @@ export default function Checkout() {
           setClientSecret(data.clientSecret);
         })
         .catch((error) => {
-          toast({
-            title: "Error",
-            description: "Failed to initialize payment. Please try again.",
-            variant: "destructive",
+          console.log("Payment initialization error:", error);
+          // Check if this is a Stripe disabled error
+          error.json?.().then((errorData: any) => {
+            if (errorData.stripeDisabled) {
+              setStripeDisabled(true);
+            }
+          }).catch(() => {
+            // If we can't parse the error, assume Stripe is disabled
+            setStripeDisabled(true);
           });
         });
     }
-  }, [booking, clientSecret, toast]);
+  }, [booking, clientSecret, stripeDisabled, toast]);
 
   if (bookingLoading) {
     return (
@@ -201,6 +324,26 @@ export default function Checkout() {
     );
   }
 
+  // Show demo checkout if Stripe is disabled
+  if (stripeDisabled) {
+    return (
+      <div className="min-h-screen bg-slate-50 py-20">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Card className="shadow-xl border border-slate-200">
+            <CardHeader className="gradient-purple-blue p-6">
+              <CardTitle className="text-2xl font-bold text-white text-center">
+                Complete Your Booking (Demo Mode)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-8">
+              <DemoCheckoutForm booking={booking} />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   if (!clientSecret) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -222,9 +365,11 @@ export default function Checkout() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-8">
-            <Elements stripe={stripePromise} options={{ clientSecret }}>
-              <CheckoutForm booking={booking} />
-            </Elements>
+            {stripePromise && (
+              <Elements stripe={stripePromise} options={{ clientSecret }}>
+                <CheckoutForm booking={booking} />
+              </Elements>
+            )}
           </CardContent>
         </Card>
       </div>
