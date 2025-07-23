@@ -8,6 +8,14 @@ RideConnect is a full-stack web application that provides a personal driver book
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+
+**July 23, 2025**: Successfully migrated project from Replit Agent to Replit environment
+- Set up PostgreSQL database with all required tables (users, sessions, timeSlots, bookings)
+- Verified database connection and API endpoints are working
+- Application running on port 5000 with hot reload enabled
+- All dependencies properly installed and configured
+
 ## System Architecture
 
 ### Frontend Architecture
