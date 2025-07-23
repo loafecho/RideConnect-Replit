@@ -35,7 +35,7 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-4">Contact</h4>
             <div className="space-y-2 text-slate-400">
-              <p>📞 (555) 123-4567</p>
+              <p>📞 (562) 618-2059</p>
               <p>tony@loafecho.com</p>
               <div className="flex space-x-4 mt-4">
                 <a href="#" className="text-slate-400 hover:text-white transition-colors">
