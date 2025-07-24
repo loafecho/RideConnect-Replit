@@ -69,12 +69,6 @@ export default function AdminLogin() {
               Login as Admin
             </Button>
           </form>
-          <div className="mt-6 p-4 bg-slate-50 rounded-lg">
-            <p className="text-sm text-slate-600 mb-2">
-              <strong>Demo Admin Key:</strong>
-            </p>
-            <code className="text-sm bg-white px-2 py-1 rounded border">admin123</code>
-          </div>
         </CardContent>
       </Card>
     </div>
