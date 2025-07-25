@@ -1,6 +1,15 @@
 # Multi-stage build for RideConnect application
 FROM node:18-alpine AS builder
 
+# Metadata labels
+LABEL org.opencontainers.image.title="RideConnect"
+LABEL org.opencontainers.image.description="Full-stack TypeScript ride-sharing platform with React frontend, Express backend, and PostgreSQL database"
+LABEL org.opencontainers.image.version="1.0.0"
+LABEL org.opencontainers.image.source="https://github.com/antg98/main-repo"
+LABEL org.opencontainers.image.documentation="https://github.com/antg98/main-repo#readme"
+LABEL org.opencontainers.image.vendor="RideConnect"
+LABEL maintainer="antg98"
+
 # Set working directory
 WORKDIR /app
 

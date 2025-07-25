@@ -25,7 +25,9 @@
       "Bash(docker push:*)",
       "Bash(docker system:*)",
       "Bash(ls:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(docker inspect:*)",
+      "Bash(docker save:*)"
     ],
     "deny": []
   }
