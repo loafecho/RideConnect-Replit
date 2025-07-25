@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  rideconnect:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rideconnect-app
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://rideconnect_user:rideconnect_password123@192.168.1.188:5433/rideconnect
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+      - VITE_STRIPE_PUBLIC_KEY=${VITE_STRIPE_PUBLIC_KEY:-}
+    # volumes:
+      # Development volume mounts (comment out for production)
+      # - .:/app
+      # - /app/node_modules
+    networks:
+      - rideconnect-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5000/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      - rideconnect-db
+
+  # Optional local PostgreSQL for development
+  # Remove this service if using external database only
+  rideconnect-db:
+    image: postgres:15-alpine
+    container_name: rideconnect-postgres
+    environment:
+      - POSTGRES_DB=rideconnect_local
+      - POSTGRES_USER=rideconnect_user
+      - POSTGRES_PASSWORD=rideconnect_password123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    networks:
+      - rideconnect-network
+    restart: unless-stopped
+
+networks:
+  rideconnect-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

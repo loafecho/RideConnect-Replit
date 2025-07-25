@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(hostname:*)",
+      "Bash(npm run:*)",
+      "Bash(npm install:*)",
+      "Bash(ipconfig)",
+      "Bash(netsh:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(docker build:*)",
+      "Bash(docker run:*)",
+      "Bash(timeout 15 docker run --rm -p 5000:5000 -e DATABASE_URL=\"postgresql://rideconnect_user:rideconnect_password123@192.168.1.188:5433/rideconnect\" -e NODE_ENV=production rideconnect:latest)",
+      "Bash(docker logs:*)",
+      "Bash(curl:*)",
+      "Bash(docker exec:*)",
+      "Bash(docker stop:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(docker-compose:*)",
+      "Bash(docker tag:*)",
+      "Bash(docker push:*)",
+      "Bash(docker system:*)",
+      "Bash(ls:*)",
+      "Bash(powershell:*)"
+    ],
+    "deny": []
+  }
+}

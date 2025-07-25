@@ -1,4 +1,6 @@
-# CLAUDE.md - RideConnect Project Guide
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
@@ -265,8 +267,6 @@ npm run db:push  # Push schema changes to database
 - **Performance** optimized with React Query caching and Vite bundling
 - **Scalability** ready with serverless database and stateless backend
 - **Security** with server-side payment processing and input validation
-
-## Standard Workflow 
 
 ## Standard Workflow
 

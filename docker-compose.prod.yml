@@ -1,0 +1,19 @@
+# Production override for docker-compose
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+
+version: '3.8'
+
+services:
+  rideconnect:
+    # Remove development volume mounts
+    volumes: []
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://rideconnect_user:rideconnect_password123@192.168.1.188:5433/rideconnect
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - VITE_STRIPE_PUBLIC_KEY=${VITE_STRIPE_PUBLIC_KEY}
+    
+  # Remove local PostgreSQL service for production
+  rideconnect-db:
+    deploy:
+      replicas: 0
