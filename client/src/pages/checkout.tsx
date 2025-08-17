@@ -36,7 +36,7 @@ const CheckoutForm = ({ booking }: { booking: any }) => {
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}/booking`,
+        return_url: `${window.location.origin}/confirmation/${booking.id}`,
       },
       redirect: 'if_required',
     });
@@ -60,7 +60,7 @@ const CheckoutForm = ({ booking }: { booking: any }) => {
         });
         
         queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
-        setLocation('/booking');
+        setLocation(`/confirmation/${booking.id}`);
       } catch (err) {
         toast({
           title: "Payment Processed",
@@ -167,7 +167,7 @@ const DemoCheckoutForm = ({ booking }: { booking: any }) => {
       });
       
       queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
-      setLocation('/booking');
+      setLocation(`/confirmation/${booking.id}`);
     } catch (err) {
       toast({
         title: "Demo Payment Failed",
