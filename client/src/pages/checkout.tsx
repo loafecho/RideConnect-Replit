@@ -75,34 +75,34 @@ const CheckoutForm = ({ booking }: { booking: any }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-slate-50 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4">Booking Summary</h3>
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-xl p-6 border border-border">
+        <h3 className="text-lg font-semibold text-foreground mb-4">Booking Summary</h3>
         <div className="space-y-3">
-          <div className="flex items-center text-slate-700">
+          <div className="flex items-center text-foreground">
             <MapPin className="mr-3 text-green-500" size={18} />
             <div>
-              <p className="text-sm text-slate-500">From</p>
+              <p className="text-sm text-muted-foreground">From</p>
               <p className="font-medium">{booking.pickupLocation}</p>
             </div>
           </div>
-          <div className="flex items-center text-slate-700">
+          <div className="flex items-center text-foreground">
             <MapPin className="mr-3 text-red-500" size={18} />
             <div>
-              <p className="text-sm text-slate-500">To</p>
+              <p className="text-sm text-muted-foreground">To</p>
               <p className="font-medium">{booking.dropoffLocation}</p>
             </div>
           </div>
-          <div className="flex items-center text-slate-700">
+          <div className="flex items-center text-foreground">
             <Clock className="mr-3 text-blue-500" size={18} />
             <div>
-              <p className="text-sm text-slate-500">Date & Time</p>
+              <p className="text-sm text-muted-foreground">Date & Time</p>
               <p className="font-medium">{booking.date} at {booking.timeSlot}</p>
             </div>
           </div>
-          <div className="flex items-center text-slate-700">
+          <div className="flex items-center text-foreground">
             <Users className="mr-3 text-purple-500" size={18} />
             <div>
-              <p className="text-sm text-slate-500">Passengers</p>
+              <p className="text-sm text-muted-foreground">Passengers</p>
               <p className="font-medium">{booking.passengerCount} passenger(s)</p>
             </div>
           </div>
@@ -111,13 +111,13 @@ const CheckoutForm = ({ booking }: { booking: any }) => {
         <Separator className="my-4" />
         
         <div className="flex justify-between items-center">
-          <span className="text-lg font-semibold text-slate-900">Total Amount:</span>
-          <span className="text-2xl font-bold text-green-600">${booking.estimatedPrice}</span>
+          <span className="text-lg font-semibold text-foreground">Total Amount:</span>
+          <span className="text-2xl font-bold text-emerald-600">${booking.estimatedPrice}</span>
         </div>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+      <div className="bg-card border border-border rounded-xl p-6">
+        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
           <CreditCard className="mr-2" size={20} />
           Payment Information
         </h3>
@@ -181,13 +181,13 @@ const DemoCheckoutForm = ({ booking }: { booking: any }) => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-slate-50 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4">Booking Summary</h3>
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-xl p-6 border border-border">
+        <h3 className="text-lg font-semibold text-foreground mb-4">Booking Summary</h3>
         <div className="space-y-3">
           <div className="flex items-center space-x-3">
             <MapPin className="text-blue-500" size={16} />
             <div>
-              <p className="text-sm text-slate-500">From</p>
+              <p className="text-sm text-muted-foreground">From</p>
               <p className="font-medium">{booking.pickupLocation}</p>
             </div>
           </div>
@@ -195,7 +195,7 @@ const DemoCheckoutForm = ({ booking }: { booking: any }) => {
           <div className="flex items-center space-x-3">
             <MapPin className="text-green-500" size={16} />
             <div>
-              <p className="text-sm text-slate-500">To</p>
+              <p className="text-sm text-muted-foreground">To</p>
               <p className="font-medium">{booking.dropoffLocation}</p>
             </div>
           </div>
@@ -203,7 +203,7 @@ const DemoCheckoutForm = ({ booking }: { booking: any }) => {
           <div className="flex items-center space-x-3">
             <Clock className="text-orange-500" size={16} />
             <div>
-              <p className="text-sm text-slate-500">Date & Time</p>
+              <p className="text-sm text-muted-foreground">Date & Time</p>
               <p className="font-medium">{booking.date} at {booking.timeSlot}</p>
             </div>
           </div>
@@ -211,7 +211,7 @@ const DemoCheckoutForm = ({ booking }: { booking: any }) => {
           <div className="flex items-center space-x-3">
             <Users className="text-purple-500" size={16} />
             <div>
-              <p className="text-sm text-slate-500">Passengers</p>
+              <p className="text-sm text-muted-foreground">Passengers</p>
               <p className="font-medium">{booking.passengerCount} passenger(s)</p>
             </div>
           </div>
@@ -220,24 +220,24 @@ const DemoCheckoutForm = ({ booking }: { booking: any }) => {
         <Separator className="my-4" />
         
         <div className="flex justify-between items-center">
-          <span className="text-lg font-semibold text-slate-900">Total Amount:</span>
-          <span className="text-2xl font-bold text-green-600">${booking.estimatedPrice}</span>
+          <span className="text-lg font-semibold text-foreground">Total Amount:</span>
+          <span className="text-2xl font-bold text-emerald-600">${booking.estimatedPrice}</span>
         </div>
       </div>
 
-      <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+      <div className="bg-yellow-50 border border-yellow-200 dark:bg-yellow-950/20 dark:border-yellow-800 rounded-xl p-6">
+        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
           <CreditCard className="mr-2" size={20} />
           Demo Payment Mode
         </h3>
-        <p className="text-sm text-slate-600 mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           Stripe is currently not configured. This is a demo payment that will mark your booking as confirmed without processing any actual payment.
         </p>
-        <div className="bg-white border rounded-lg p-4">
-          <p className="text-sm font-medium text-slate-700 mb-2">Demo Payment Details:</p>
-          <p className="text-xs text-slate-500">• No actual payment will be processed</p>
-          <p className="text-xs text-slate-500">• Your booking will be confirmed for testing</p>
-          <p className="text-xs text-slate-500">• Set up Stripe to enable real payments</p>
+        <div className="bg-card border border-border rounded-lg p-4">
+          <p className="text-sm font-medium text-foreground mb-2">Demo Payment Details:</p>
+          <p className="text-xs text-muted-foreground">• No actual payment will be processed</p>
+          <p className="text-xs text-muted-foreground">• Your booking will be confirmed for testing</p>
+          <p className="text-xs text-muted-foreground">• Set up Stripe to enable real payments</p>
         </div>
       </div>
 
@@ -302,7 +302,7 @@ export default function Checkout() {
 
   if (bookingLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
         <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" aria-label="Loading" />
       </div>
     );
@@ -310,11 +310,11 @@ export default function Checkout() {
 
   if (!booking) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Card className="max-w-md mx-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+        <Card className="max-w-md mx-4 card-elevated bg-card border-0">
           <CardContent className="pt-6 text-center">
-            <h1 className="text-2xl font-bold text-slate-900 mb-4">Booking Not Found</h1>
-            <p className="text-slate-600 mb-4">The booking you're looking for doesn't exist or has been removed.</p>
+            <h1 className="text-2xl font-bold text-foreground mb-4">Booking Not Found</h1>
+            <p className="text-muted-foreground mb-4">The booking you're looking for doesn't exist or has been removed.</p>
             <Button onClick={() => window.location.href = '/booking'}>
               Back to Booking
             </Button>
@@ -327,9 +327,9 @@ export default function Checkout() {
   // Show demo checkout if Stripe is disabled
   if (stripeDisabled) {
     return (
-      <div className="min-h-screen bg-slate-50 py-20">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-20">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Card className="shadow-xl border border-slate-200">
+          <Card className="card-elevated shadow-xl border-0 bg-card">
             <CardHeader className="gradient-purple-blue p-6">
               <CardTitle className="text-2xl font-bold text-white text-center">
                 Complete Your Booking (Demo Mode)
@@ -346,19 +346,19 @@ export default function Checkout() {
 
   if (!clientSecret) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" aria-label="Loading" />
-          <p className="text-slate-600">Preparing payment...</p>
+          <p className="text-muted-foreground">Preparing payment...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-20">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-20">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Card className="shadow-xl border border-slate-200">
+        <Card className="card-elevated shadow-xl border-0 bg-card">
           <CardHeader className="gradient-purple-blue p-6">
             <CardTitle className="text-2xl font-bold text-white text-center">
               Complete Your Booking
