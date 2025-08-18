@@ -1,0 +1,151 @@
+# Page snapshot
+
+```yaml
+- region "Notifications (F8)":
+  - list
+- banner:
+  - navigation:
+    - link "RideConnect":
+      - /url: /
+      - img
+      - heading "RideConnect" [level=1]
+    - link "Home":
+      - /url: /
+      - img
+      - text: Home
+    - link "Book Ride":
+      - /url: /booking
+      - img
+      - text: Book Ride
+    - button "Toggle theme":
+      - img
+      - img
+      - text: Toggle theme
+    - link "Admin Sign In":
+      - /url: /admin
+      - button "Admin Sign In"
+- main:
+  - heading "Book Your Perfect Ride" [level=1]
+  - paragraph: Simple, step-by-step booking for your personal transportation needs.
+  - img
+  - text: Personal Information
+  - img
+  - text: Trip Locations 3 Date & Time 4 Review & Book
+  - progressbar
+  - img
+  - text: "Step 3: Date & Time"
+  - img
+  - text: Select Date August 2025
+  - button "Go to previous month":
+    - img
+  - button "Go to next month":
+    - img
+  - grid "August 2025":
+    - rowgroup:
+      - row "Sunday Monday Tuesday Wednesday Thursday Friday Saturday":
+        - columnheader "Sunday": Su
+        - columnheader "Monday": Mo
+        - columnheader "Tuesday": Tu
+        - columnheader "Wednesday": We
+        - columnheader "Thursday": Th
+        - columnheader "Friday": Fr
+        - columnheader "Saturday": Sa
+    - rowgroup:
+      - row "27 28 29 30 31 1 2":
+        - gridcell "27" [disabled]
+        - gridcell "28" [disabled]
+        - gridcell "29" [disabled]
+        - gridcell "30" [disabled]
+        - gridcell "31" [disabled]
+        - gridcell "1" [disabled]
+        - gridcell "2" [disabled]
+      - row "3 4 5 6 7 8 9":
+        - gridcell "3" [disabled]
+        - gridcell "4" [disabled]
+        - gridcell "5" [disabled]
+        - gridcell "6" [disabled]
+        - gridcell "7" [disabled]
+        - gridcell "8" [disabled]
+        - gridcell "9" [disabled]
+      - row "10 11 12 13 14 15 16":
+        - gridcell "10" [disabled]
+        - gridcell "11" [disabled]
+        - gridcell "12" [disabled]
+        - gridcell "13" [disabled]
+        - gridcell "14" [disabled]
+        - gridcell "15" [disabled]
+        - gridcell "16" [disabled]
+      - row "17 18 19 20 21 22 23":
+        - gridcell "17" [disabled] [selected]
+        - gridcell "18"
+        - gridcell "19"
+        - gridcell "20"
+        - gridcell "21"
+        - gridcell "22"
+        - gridcell "23"
+      - row "24 25 26 27 28 29 30":
+        - gridcell "24"
+        - gridcell "25"
+        - gridcell "26"
+        - gridcell "27"
+        - gridcell "28"
+        - gridcell "29"
+        - gridcell "30"
+      - row "31 1 2 3 4 5 6":
+        - gridcell "31"
+        - gridcell "1"
+        - gridcell "2"
+        - gridcell "3"
+        - gridcell "4"
+        - gridcell "5"
+        - gridcell "6"
+  - img
+  - text: Available Times 3:00 PM - 3:15 PM 3:15 PM - 3:30 PM 3:30 PM - 3:45 PM 3:45 PM - 4:00 PM 4:00 PM - 4:15 PM 4:15 PM - 4:30 PM 4:30 PM - 4:45 PM 4:45 PM - 5:00 PM 5:00 PM - 5:15 PM 5:15 PM - 5:30 PM 5:30 PM - 5:45 PM 5:45 PM - 6:00 PM 6:00 PM - 6:15 PM 6:15 PM - 6:30 PM 6:30 PM - 6:45 PM 6:45 PM - 7:00 PM 7:00 PM - 7:15 PM 7:15 PM - 7:30 PM 7:30 PM - 7:45 PM 7:45 PM - 8:00 PM 8:00 PM - 8:15 PM 8:15 PM - 8:30 PM 8:30 PM - 8:45 PM 8:45 PM - 9:00 PM 9:00 PM - 9:15 PM 9:15 PM - 9:30 PM 9:30 PM - 9:45 PM 9:45 PM - 10:00 PM 10:00 PM - 10:15 PM 10:15 PM - 10:30 PM 10:30 PM - 10:45 PM 10:45 PM - 11:00 PM
+  - button "Previous":
+    - img
+    - text: Previous
+  - button "Next" [disabled]:
+    - text: Next
+    - img
+- contentinfo:
+  - heading "RideConnect" [level=3]
+  - paragraph: Your trusted personal driver service for reliable, comfortable transportation.
+  - heading "Services" [level=4]
+  - list:
+    - listitem:
+      - link "Airport Transfers":
+        - /url: "#"
+    - listitem:
+      - link "City Tours":
+        - /url: "#"
+    - listitem:
+      - link "Business Travel":
+        - /url: "#"
+    - listitem:
+      - link "Special Events":
+        - /url: "#"
+  - heading "Support" [level=4]
+  - list:
+    - listitem:
+      - link "Help Center":
+        - /url: "#"
+    - listitem:
+      - link "Contact Us":
+        - /url: "#"
+    - listitem:
+      - link "Safety":
+        - /url: "#"
+    - listitem:
+      - link "Privacy Policy":
+        - /url: "#"
+  - heading "Contact" [level=4]
+  - paragraph: 📞 (562) 618-2059
+  - paragraph: tony@loafecho.com
+  - link "Facebook":
+    - /url: "#"
+  - link "Twitter":
+    - /url: "#"
+  - link "Instagram":
+    - /url: "#"
+  - paragraph: © 2024 RideConnect. All rights reserved.
+```

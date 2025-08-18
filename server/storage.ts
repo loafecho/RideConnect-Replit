@@ -70,8 +70,65 @@ export class DatabaseStorage implements IStorage {
 
   // Booking management
   async createBooking(booking: InsertBooking): Promise<Booking> {
-    const [newBooking] = await db.insert(bookings).values(booking).returning();
-    return newBooking;
+    try {
+      const [newBooking] = await db.insert(bookings).values(booking).returning();
+      console.log('✅ Booking created successfully:', { id: newBooking.id, customerName: newBooking.customerName });
+      return newBooking;
+    } catch (error) {
+      console.error('❌ Database error in createBooking:');
+      console.error('📋 Booking data:', JSON.stringify(booking, null, 2));
+      console.error('🔍 Error details:', error);
+      
+      // Extract specific column errors from PostgreSQL error messages
+      if (error instanceof Error && error.message.includes('column')) {
+        const columnMatch = error.message.match(/column "([^"]+)"/);
+        if (columnMatch) {
+          console.error(`🎯 Missing column detected: ${columnMatch[1]}`);
+        }
+      }
+      
+      throw new Error(`Failed to create booking: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  async updateBookingCalInfo(
+    id: number, 
+    calData: {
+      calBookingId?: string;
+      calEventId?: string;
+      calStatus?: string;
+      calSyncedAt?: Date;
+    }
+  ): Promise<Booking | undefined> {
+    const [updatedBooking] = await db
+      .update(bookings)
+      .set({
+        ...calData,
+        calSyncedAt: calData.calSyncedAt || new Date(),
+      })
+      .where(eq(bookings.id, id))
+      .returning();
+    return updatedBooking || undefined;
+  }
+
+  async updateBookingGoogleCalendarInfo(
+    id: number, 
+    googleData: {
+      googleEventId?: string;
+      googleCalendarId?: string;
+      googleSyncStatus?: string;
+      googleSyncedAt?: Date;
+    }
+  ): Promise<Booking | undefined> {
+    const [updatedBooking] = await db
+      .update(bookings)
+      .set({
+        ...googleData,
+        googleSyncedAt: googleData.googleSyncedAt || new Date(),
+      })
+      .where(eq(bookings.id, id))
+      .returning();
+    return updatedBooking || undefined;
   }
 
   async getBooking(id: number): Promise<Booking | undefined> {

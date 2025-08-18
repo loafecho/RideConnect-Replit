@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
 import { insertBookingSchema, insertTimeSlotSchema } from "@shared/schema";
+import { calcomService } from "./calcomService";
 
 // Optional Stripe setup - allows app to run without Stripe for development
 let stripe: Stripe | null = null;
@@ -129,8 +130,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/bookings", async (req, res) => {
     try {
       const validatedData = insertBookingSchema.parse(req.body);
+      
+      // Create booking in local database first
       const booking = await storage.createBooking(validatedData);
-      res.json(booking);
+      
+      // Attempt to create booking in Cal.com (non-blocking)
+      if (calcomService.isCalComEnabled()) {
+        try {
+          const calBooking = await calcomService.createBooking(booking);
+          
+          if (calBooking) {
+            // Update local booking with Cal.com reference
+            await storage.updateBookingCalInfo(booking.id, {
+              calBookingId: calBooking.id,
+              calEventId: calBooking.uid,
+              calStatus: 'synced',
+            });
+            
+            console.log(`✅ Booking ${booking.id} synced with Cal.com: ${calBooking.id}`);
+          } else {
+            // Mark as failed but don't block the booking
+            await storage.updateBookingCalInfo(booking.id, {
+              calStatus: 'failed',
+            });
+            
+            console.log(`⚠️ Booking ${booking.id} created locally but Cal.com sync failed`);
+          }
+        } catch (calError) {
+          // Log error but don't fail the booking
+          console.error(`Cal.com sync error for booking ${booking.id}:`, calError);
+          
+          await storage.updateBookingCalInfo(booking.id, {
+            calStatus: 'failed',
+          });
+        }
+      } else {
+        console.log(`📅 Booking ${booking.id} created (Cal.com not configured)`);
+      }
+      
+      // Return the booking (with or without Cal.com sync)
+      const finalBooking = await storage.getBooking(booking.id);
+      res.json(finalBooking);
+      
     } catch (error: any) {
       res.status(400).json({ message: "Error creating booking: " + error.message });
     }

@@ -18,7 +18,10 @@ import {
   Calendar,
   ChevronRight,
   Star,
-  RefreshCw
+  RefreshCw,
+  CalendarCheck,
+  AlertTriangle,
+  ExternalLink
 } from "lucide-react";
 
 export default function Confirmation() {
@@ -120,6 +123,57 @@ export default function Confirmation() {
                 </p>
               </CardContent>
             </Card>
+
+            {/* Calendar Integration Status */}
+            {booking.calStatus && (
+              <Card className="card-elevated border-0 bg-card">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-xl font-semibold flex items-center">
+                    <CalendarCheck className="w-5 h-5 mr-2" />
+                    Calendar Integration
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {booking.calStatus === 'synced' ? (
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-foreground">Successfully added to calendar</p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          This ride has been automatically added to the driver's calendar. You'll receive automated reminders and updates.
+                        </p>
+                        {booking.calBookingId && (
+                          <div className="mt-2 flex items-center text-xs text-muted-foreground">
+                            <ExternalLink className="w-3 h-3 mr-1" />
+                            <span>Calendar ID: {booking.calBookingId}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : booking.calStatus === 'failed' ? (
+                    <Alert>
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>
+                        <span className="font-semibold">Manual calendar entry needed</span>
+                        <br />
+                        Your booking is confirmed, but we couldn't automatically add it to the calendar. 
+                        The driver will manually add this to their schedule.
+                      </AlertDescription>
+                    </Alert>
+                  ) : (
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0 animate-pulse"></div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-foreground">Adding to calendar...</p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          We're adding this booking to the driver's calendar system.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             {/* Trip Details */}
             <Card className="card-elevated border-0 bg-card">

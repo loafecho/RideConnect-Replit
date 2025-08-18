@@ -46,9 +46,15 @@ export const bookings = pgTable("bookings", {
   timeSlot: text("time_slot").notNull(),
   passengerCount: integer("passenger_count").default(1),
   notes: text("notes"),
+  isAirportRoute: boolean("is_airport_route").default(false),
   estimatedPrice: decimal("estimated_price", { precision: 10, scale: 2 }).notNull(),
   status: text("status").default("pending"), // pending, confirmed, completed, cancelled
   paymentIntentId: text("payment_intent_id"),
+  // Cal.com integration fields
+  calBookingId: text("cal_booking_id"), // Cal.com booking reference
+  calEventId: text("cal_event_id"), // Cal.com event reference
+  calStatus: text("cal_status"), // Cal.com sync status: synced, failed, pending
+  calSyncedAt: timestamp("cal_synced_at"), // Last successful sync with Cal.com
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -63,6 +69,10 @@ export const insertBookingSchema = createInsertSchema(bookings).omit({
   id: true,
   createdAt: true,
   paymentIntentId: true,
+  calBookingId: true,
+  calEventId: true,
+  calStatus: true,
+  calSyncedAt: true,
 }).extend({
   customerName: z.string().min(1, "Customer name is required"),
   customerEmail: z.string().email("Valid email is required"),
@@ -71,6 +81,7 @@ export const insertBookingSchema = createInsertSchema(bookings).omit({
   date: z.string().min(1, "Date is required"),
   timeSlot: z.string().min(1, "Time slot is required"),
   passengerCount: z.number().min(1).max(6),
+  isAirportRoute: z.boolean().default(false),
   estimatedPrice: z.string(),
 });
 
