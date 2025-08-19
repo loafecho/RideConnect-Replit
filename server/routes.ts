@@ -2,8 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
-import { insertBookingSchema, insertTimeSlotSchema } from "@shared/schema";
-import { calcomService } from "./calcomService";
+import { insertBookingSchema, insertTimeSlotSchema } from "@shared/mongoSchema";
+import { googleCalendarService } from "./googleCalendarService";
 
 // Optional Stripe setup - allows app to run without Stripe for development
 let stripe: Stripe | null = null;
@@ -101,7 +101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update time slot availability (admin only)
   app.patch("/api/timeslots/:id", isAdmin, async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const slot = await storage.updateTimeSlot(id, req.body);
       if (!slot) {
         return res.status(404).json({ message: "Time slot not found" });
@@ -115,7 +115,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete time slot (admin only)
   app.delete("/api/timeslots/:id", isAdmin, async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const deleted = await storage.deleteTimeSlot(id);
       if (!deleted) {
         return res.status(404).json({ message: "Time slot not found" });
@@ -134,43 +134,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create booking in local database first
       const booking = await storage.createBooking(validatedData);
       
-      // Attempt to create booking in Cal.com (non-blocking)
-      if (calcomService.isCalComEnabled()) {
+      // Attempt to create booking in Google Calendar (non-blocking)
+      if (googleCalendarService.isGoogleCalendarEnabled()) {
         try {
-          const calBooking = await calcomService.createBooking(booking);
+          const googleEvent = await googleCalendarService.createEvent(booking);
           
-          if (calBooking) {
-            // Update local booking with Cal.com reference
-            await storage.updateBookingCalInfo(booking.id, {
-              calBookingId: calBooking.id,
-              calEventId: calBooking.uid,
-              calStatus: 'synced',
-            });
-            
-            console.log(`✅ Booking ${booking.id} synced with Cal.com: ${calBooking.id}`);
+          if (googleEvent) {
+            console.log(`✅ Booking ${booking.id} synced with Google Calendar: ${googleEvent.id}`);
           } else {
-            // Mark as failed but don't block the booking
-            await storage.updateBookingCalInfo(booking.id, {
-              calStatus: 'failed',
-            });
-            
-            console.log(`⚠️ Booking ${booking.id} created locally but Cal.com sync failed`);
+            console.log(`⚠️ Booking ${booking.id} created locally but Google Calendar sync failed`);
           }
-        } catch (calError) {
+        } catch (googleError) {
           // Log error but don't fail the booking
-          console.error(`Cal.com sync error for booking ${booking.id}:`, calError);
-          
-          await storage.updateBookingCalInfo(booking.id, {
-            calStatus: 'failed',
-          });
+          console.error(`Google Calendar sync error for booking ${booking.id}:`, googleError);
         }
       } else {
-        console.log(`📅 Booking ${booking.id} created (Cal.com not configured)`);
+        console.log(`📅 Booking ${booking.id} created (Google Calendar not configured)`);
       }
       
       // Return the booking (with or without Cal.com sync)
-      const finalBooking = await storage.getBooking(booking.id);
-      res.json(finalBooking);
+      const finalBooking = await storage.getBooking((booking as any)._id.toString());
+      
+      // Transform MongoDB _id to id for frontend compatibility
+      const responseBooking = {
+        ...finalBooking?.toJSON(),
+        id: (finalBooking as any)?._id.toString()
+      };
+      
+      res.json(responseBooking);
       
     } catch (error: any) {
       res.status(400).json({ message: "Error creating booking: " + error.message });
@@ -180,12 +171,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get individual booking by ID (for checkout)
   app.get("/api/bookings/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const booking = await storage.getBooking(id);
       if (!booking) {
         return res.status(404).json({ message: "Booking not found" });
       }
-      res.json(booking);
+      
+      // Transform MongoDB _id to id for frontend compatibility
+      const responseBooking = {
+        ...booking.toJSON(),
+        id: (booking as any)._id.toString()
+      };
+      
+      res.json(responseBooking);
     } catch (error: any) {
       res.status(500).json({ message: "Error fetching booking: " + error.message });
     }
@@ -195,7 +193,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/bookings", isAdmin, async (req, res) => {
     try {
       const bookings = await storage.getBookings();
-      res.json(bookings);
+      
+      // Transform MongoDB _id to id for frontend compatibility
+      const responseBookings = bookings.map(booking => ({
+        ...booking.toJSON(),
+        id: (booking as any)._id.toString()
+      }));
+      
+      res.json(responseBookings);
     } catch (error: any) {
       res.status(500).json({ message: "Error fetching bookings: " + error.message });
     }
@@ -206,16 +211,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { date } = req.params;
       const bookings = await storage.getBookingsByDate(date);
-      res.json(bookings);
+      
+      // Transform MongoDB _id to id for frontend compatibility
+      const responseBookings = bookings.map(booking => ({
+        ...booking.toJSON(),
+        id: (booking as any)._id.toString()
+      }));
+      
+      res.json(responseBookings);
     } catch (error: any) {
       res.status(500).json({ message: "Error fetching bookings: " + error.message });
+    }
+  });
+
+  // Manual sync specific booking RC0036-2025 to Google Calendar
+  app.post("/api/bookings/36/sync-calendar", async (req, res) => {
+    try {
+      if (!googleCalendarService.isGoogleCalendarEnabled()) {
+        return res.status(503).json({ message: "Google Calendar not configured" });
+      }
+
+      // Hardcode the booking details for RC0036-2025
+      const booking = {
+        id: 36,
+        customerName: "t",
+        customerEmail: "t@t.com",
+        customerPhone: "5626182059",
+        pickupLocation: "3148, Delilah Place, Inspirada, Henderson, Clark County, Nevada, 89044, USA",
+        dropoffLocation: "1030, Moorpoint Drive, Rancho Corridor, North Las Vegas, Clark County, Nevada, 89031, USA",
+        date: "2025-08-17",
+        timeSlot: "22:45-23:00",
+        passengerCount: 1,
+        notes: null,
+        isAirportRoute: false,
+        estimatedPrice: "55.57",
+        status: "pending"
+      };
+
+      try {
+        const googleEvent = await googleCalendarService.createEvent(booking);
+        if (googleEvent) {
+          res.json({ 
+            success: true, 
+            message: `Booking RC0036-2025 synced to Google Calendar`,
+            eventId: googleEvent.id,
+            eventLink: googleEvent.htmlLink,
+            booking: booking
+          });
+        } else {
+          res.status(500).json({ message: "Failed to create calendar event" });
+        }
+      } catch (calendarError) {
+        console.error(`Calendar sync error for booking 36:`, calendarError);
+        res.status(500).json({ message: "Calendar sync failed: " + calendarError.message });
+      }
+    } catch (error: any) {
+      res.status(500).json({ message: "Error syncing booking: " + error.message });
     }
   });
 
   // Update booking status (admin only)
   app.patch("/api/bookings/:id/status", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const { status, paymentIntentId } = req.body;
       const booking = await storage.updateBookingStatus(id, status, paymentIntentId);
       if (!booking) {

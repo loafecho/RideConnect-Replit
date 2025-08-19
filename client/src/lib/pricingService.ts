@@ -221,6 +221,11 @@ function estimateRoute(
   const [startLon, startLat] = start;
   const [endLon, endLat] = end;
   
+  console.log('🔍 Estimating route:', { 
+    start: { lat: startLat, lon: startLon },
+    end: { lat: endLat, lon: endLon }
+  });
+  
   // Calculate straight-line distance
   const straightLineKm = calculateHaversineDistance(startLat, startLon, endLat, endLon);
   
@@ -242,6 +247,15 @@ function estimateRoute(
   const durationHours = drivingDistanceKm / avgSpeedKmh;
   const durationSeconds = durationHours * 3600;
   
+  console.log('📊 Route estimation results:', {
+    straightLineKm: straightLineKm.toFixed(1),
+    drivingDistanceKm: drivingDistanceKm.toFixed(1),
+    drivingDistanceMiles: (drivingDistanceKm * 0.621371).toFixed(1),
+    avgSpeedKmh,
+    durationHours: durationHours.toFixed(2),
+    durationMinutes: (durationHours * 60).toFixed(1)
+  });
+  
   return {
     duration: durationSeconds,
     distance: drivingDistanceMeters
@@ -260,6 +274,12 @@ async function getOpenRouteServiceRoute(
   // If no API key is configured, use estimation immediately
   if (!apiKey) {
     console.info('OpenRouteService API key not configured, using distance estimation');
+    return estimateRoute(start, end);
+  }
+  
+  // Check if API key is the placeholder
+  if (apiKey === 'your_openroute_api_key_here' || apiKey.includes('your_')) {
+    console.info('OpenRouteService API key is placeholder, using distance estimation');
     return estimateRoute(start, end);
   }
   
