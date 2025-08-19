@@ -3,6 +3,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { ensurePortOpen } from "./firewall";
+import { diagnostics } from "./startupDiagnostics";
 
 const app = express();
 app.use(express.json());
@@ -69,7 +70,21 @@ app.use((req, res, next) => {
     await ensurePortOpen(port);
   }
   
-  server.listen(port, "0.0.0.0", () => {
+  server.listen(port, "0.0.0.0", async () => {
     log(`serving on port ${port}`);
+    
+    // Run comprehensive startup diagnostics
+    await diagnostics.runAllDiagnostics(app);
+    
+    // Show final startup status
+    if (diagnostics.hasCriticalErrors()) {
+      console.log('❌ Server started with critical errors - some features may not work properly');
+    } else if (diagnostics.hasErrors()) {
+      console.log('⚠️ Server started with some issues - check diagnostics above');
+    } else {
+      console.log('🌐 Server ready and all systems operational!');
+    }
+    
+    console.log(`🔗 Access your app at: http://localhost:${port}`);
   });
 })();

@@ -50,11 +50,16 @@ export const bookings = pgTable("bookings", {
   estimatedPrice: decimal("estimated_price", { precision: 10, scale: 2 }).notNull(),
   status: text("status").default("pending"), // pending, confirmed, completed, cancelled
   paymentIntentId: text("payment_intent_id"),
-  // Cal.com integration fields
+  // Cal.com integration fields (deprecated but kept for migration)
   calBookingId: text("cal_booking_id"), // Cal.com booking reference
   calEventId: text("cal_event_id"), // Cal.com event reference
   calStatus: text("cal_status"), // Cal.com sync status: synced, failed, pending
   calSyncedAt: timestamp("cal_synced_at"), // Last successful sync with Cal.com
+  // Google Calendar integration fields
+  googleEventId: text("google_event_id"), // Google Calendar event ID
+  googleCalendarId: text("google_calendar_id"), // Google Calendar ID (for multiple calendars)
+  googleSyncStatus: text("google_sync_status"), // Google Calendar sync status: synced, failed, pending
+  googleSyncedAt: timestamp("google_synced_at"), // Last successful sync with Google Calendar
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -73,6 +78,10 @@ export const insertBookingSchema = createInsertSchema(bookings).omit({
   calEventId: true,
   calStatus: true,
   calSyncedAt: true,
+  googleEventId: true,
+  googleCalendarId: true,
+  googleSyncStatus: true,
+  googleSyncedAt: true,
 }).extend({
   customerName: z.string().min(1, "Customer name is required"),
   customerEmail: z.string().email("Valid email is required"),

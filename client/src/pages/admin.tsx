@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { insertTimeSlotSchema } from "@shared/schema";
+import { insertTimeSlotSchema } from "@shared/mongoSchema";
 import { useAuth } from "@/hooks/useAuth";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Gauge, CalendarX2, List, TrendingUp, Car, DollarSign, Clock, BarChart3, Plus, Trash2 } from "lucide-react";

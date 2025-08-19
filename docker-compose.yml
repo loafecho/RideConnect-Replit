@@ -10,7 +10,7 @@ services:
       - "5000:5000"
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://rideconnect_user:rideconnect_password123@192.168.1.188:5433/rideconnect
+      - MONGODB_URI=mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongodb:27017/${MONGO_DATABASE}?authSource=admin
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
       - VITE_STRIPE_PUBLIC_KEY=${VITE_STRIPE_PUBLIC_KEY:-}
     # volumes:
@@ -27,28 +27,33 @@ services:
       retries: 3
       start_period: 40s
     depends_on:
-      - rideconnect-db
+      - mongodb
 
-  # Optional local PostgreSQL for development
-  # Remove this service if using external database only
-  rideconnect-db:
-    image: postgres:15-alpine
-    container_name: rideconnect-postgres
+  # MongoDB database service
+  mongodb:
+    image: mongo:7.0
+    container_name: rideconnect-mongodb
     environment:
-      - POSTGRES_DB=rideconnect_local
-      - POSTGRES_USER=rideconnect_user
-      - POSTGRES_PASSWORD=rideconnect_password123
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGO_DATABASE}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - /media/athena/M87/Data/RideConnect/mongodb:/data/db
+      - /media/athena/M87/Data/RideConnect/mongodb-config:/data/configdb
     ports:
-      - "5434:5432"
+      - "27017:27017"
     networks:
       - rideconnect-network
     restart: unless-stopped
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
 networks:
   rideconnect-network:
     driver: bridge
 
-volumes:
-  postgres_data:
+# MongoDB data is stored on external drive at /media/athena/M87/Data/RideConnect/

@@ -1,0 +1,164 @@
+# Page snapshot
+
+```yaml
+- region "Notifications (F8)":
+  - list
+- banner:
+  - navigation:
+    - link "RideConnect":
+      - /url: /
+      - img
+      - heading "RideConnect" [level=1]
+    - link "Home":
+      - /url: /
+      - img
+      - text: Home
+    - link "Book Ride":
+      - /url: /booking
+      - img
+      - text: Book Ride
+    - button "Toggle theme":
+      - img
+      - img
+      - text: Toggle theme
+    - link "Admin Sign In":
+      - /url: /admin
+      - button "Admin Sign In"
+- main:
+  - heading "Your Personal Driver" [level=1]
+  - paragraph: Skip the apps, skip the wait. Book rides directly with a trusted local driver for reliable, personal transportation.
+  - img
+  - text: No Surge Pricing
+  - img
+  - text: Direct Communication
+  - img
+  - text: Trusted Service
+  - link "Book Your Ride Now":
+    - /url: /booking
+    - button "Book Your Ride Now":
+      - text: Book Your Ride Now
+      - img
+  - button "See Reviews 4.9/5 from 200+ rides":
+    - img
+    - text: See Reviews 4.9/5 from 200+ rides
+  - text: 500+ Happy Customers 5 years Experience 24/7 Available
+  - img
+  - text: Why Choose RideConnect
+  - heading "Experience the Difference" [level=2]
+  - paragraph: Personalized transportation that puts you first. No apps, no surprises, just reliable service from a driver you can trust.
+  - img
+  - heading "Reliable Service" [level=3]
+  - paragraph: Direct booking with a trusted local driver means no surge pricing, no app glitches, and consistent quality service every time.
+  - img
+  - text: No surge pricing
+  - img
+  - text: Consistent quality
+  - img
+  - heading "Flexible Scheduling" [level=3]
+  - paragraph: Book in advance or same-day rides. Choose time slots that work for your schedule with transparent availability.
+  - img
+  - text: Advance booking
+  - img
+  - text: Real-time availability
+  - img
+  - heading "Personal Touch" [level=3]
+  - paragraph: Build a relationship with your driver. Enjoy personalized service and the comfort of familiar, trusted transportation.
+  - img
+  - text: Personal relationship
+  - img
+  - text: Trusted service
+  - img
+  - heading "Local Knowledge" [level=4]
+  - paragraph: Best routes and shortcuts
+  - img
+  - heading "Secure Payment" [level=4]
+  - paragraph: Safe online transactions
+  - img
+  - heading "Top Rated" [level=4]
+  - paragraph: 4.9/5 star rating
+  - img
+  - heading "Insured" [level=4]
+  - paragraph: Fully covered rides
+  - img
+  - text: Simple Process
+  - heading "Book in 4 Easy Steps" [level=2]
+  - paragraph: Get from A to B with our simple, transparent booking process. No hidden fees, no complicated apps.
+  - text: "1"
+  - heading "Choose Time" [level=3]
+  - paragraph: Select from available time slots that fit your schedule perfectly
+  - img
+  - heading "Set Locations" [level=3]
+  - paragraph: Enter your pickup and drop-off addresses with precise details
+  - img
+  - heading "Secure Payment" [level=3]
+  - paragraph: Pay securely online with your preferred payment method
+  - img
+  - heading "Enjoy Your Ride" [level=3]
+  - paragraph: Relax while your personal driver gets you there safely
+  - img
+  - heading "Quick Booking" [level=4]
+  - paragraph: Complete your booking in under 2 minutes
+  - img
+  - heading "Instant Confirmation" [level=4]
+  - paragraph: Get immediate booking confirmation
+  - img
+  - heading "Premium Experience" [level=4]
+  - paragraph: Enjoy personalized, high-quality service
+  - heading "Ready to Experience Personal Transportation?" [level=2]
+  - paragraph: Join hundreds of satisfied customers who've discovered the difference of having a trusted personal driver.
+  - link "Get Started Now":
+    - /url: /booking
+    - button "Get Started Now":
+      - text: Get Started Now
+      - img
+  - text: 500+ Happy Customers Average 4.9/5 rating
+  - img
+  - text: Fully Insured
+  - img
+  - text: Licensed Driver
+  - img
+  - text: 5 Years Experience
+  - img
+  - text: 24/7 Available
+- contentinfo:
+  - heading "RideConnect" [level=3]
+  - paragraph: Your trusted personal driver service for reliable, comfortable transportation.
+  - heading "Services" [level=4]
+  - list:
+    - listitem:
+      - link "Airport Transfers":
+        - /url: "#"
+    - listitem:
+      - link "City Tours":
+        - /url: "#"
+    - listitem:
+      - link "Business Travel":
+        - /url: "#"
+    - listitem:
+      - link "Special Events":
+        - /url: "#"
+  - heading "Support" [level=4]
+  - list:
+    - listitem:
+      - link "Help Center":
+        - /url: "#"
+    - listitem:
+      - link "Contact Us":
+        - /url: "#"
+    - listitem:
+      - link "Safety":
+        - /url: "#"
+    - listitem:
+      - link "Privacy Policy":
+        - /url: "#"
+  - heading "Contact" [level=4]
+  - paragraph: 📞 (562) 618-2059
+  - paragraph: tony@loafecho.com
+  - link "Facebook":
+    - /url: "#"
+  - link "Twitter":
+    - /url: "#"
+  - link "Instagram":
+    - /url: "#"
+  - paragraph: © 2024 RideConnect. All rights reserved.
+```

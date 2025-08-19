@@ -9,11 +9,19 @@ services:
     volumes: []
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://rideconnect_user:rideconnect_password123@192.168.1.188:5433/rideconnect
+      - MONGODB_URI=mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongodb:27017/${MONGO_DATABASE}?authSource=admin
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
       - VITE_STRIPE_PUBLIC_KEY=${VITE_STRIPE_PUBLIC_KEY}
     
-  # Remove local PostgreSQL service for production
-  rideconnect-db:
+  # Keep MongoDB for production (you can remove this if using cloud MongoDB)
+  mongodb:
+    # In production, you might want to:
+    # 1. Use a different volume path
+    # 2. Use cloud MongoDB instead
+    # 3. Add resource limits
     deploy:
-      replicas: 0
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M

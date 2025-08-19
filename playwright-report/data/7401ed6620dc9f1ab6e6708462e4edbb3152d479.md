@@ -1,0 +1,88 @@
+# Page snapshot
+
+```yaml
+- region "Notifications (F8)":
+  - list
+- banner:
+  - navigation:
+    - link "RideConnect":
+      - /url: /
+      - img
+      - heading "RideConnect" [level=1]
+    - link "Home":
+      - /url: /
+      - img
+      - text: Home
+    - link "Book Ride":
+      - /url: /booking
+      - img
+      - text: Book Ride
+    - button "Toggle theme":
+      - img
+      - img
+      - text: Toggle theme
+    - link "Admin Sign In":
+      - /url: /admin
+      - button "Admin Sign In"
+- main:
+  - heading "Book Your Perfect Ride" [level=1]
+  - paragraph: Simple, step-by-step booking for your personal transportation needs.
+  - text: 1 Personal Information 2 Trip Locations 3 Date & Time 4 Review & Book
+  - progressbar
+  - img
+  - text: "Step 1: Personal Information"
+  - img
+  - text: Full Name
+  - textbox "Full Name"
+  - text: 📧 Email
+  - textbox "📧 Email"
+  - text: 📱 Phone Number (Optional)
+  - textbox "📱 Phone Number (Optional)"
+  - button "Previous" [disabled]:
+    - img
+    - text: Previous
+  - button "Next" [disabled]:
+    - text: Next
+    - img
+- contentinfo:
+  - heading "RideConnect" [level=3]
+  - paragraph: Your trusted personal driver service for reliable, comfortable transportation.
+  - heading "Services" [level=4]
+  - list:
+    - listitem:
+      - link "Airport Transfers":
+        - /url: "#"
+    - listitem:
+      - link "City Tours":
+        - /url: "#"
+    - listitem:
+      - link "Business Travel":
+        - /url: "#"
+    - listitem:
+      - link "Special Events":
+        - /url: "#"
+  - heading "Support" [level=4]
+  - list:
+    - listitem:
+      - link "Help Center":
+        - /url: "#"
+    - listitem:
+      - link "Contact Us":
+        - /url: "#"
+    - listitem:
+      - link "Safety":
+        - /url: "#"
+    - listitem:
+      - link "Privacy Policy":
+        - /url: "#"
+  - heading "Contact" [level=4]
+  - paragraph: 📞 (562) 618-2059
+  - paragraph: tony@loafecho.com
+  - link "Facebook":
+    - /url: "#"
+  - link "Twitter":
+    - /url: "#"
+  - link "Instagram":
+    - /url: "#"
+  - paragraph: © 2024 RideConnect. All rights reserved.
+```

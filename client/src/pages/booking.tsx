@@ -15,7 +15,7 @@ import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { getRouteInfo, formatPricingInfo, type RouteResult, type PricingError } from "@/lib/pricingService";
-import { insertBookingSchema } from "@shared/schema";
+import { insertBookingSchema } from "@shared/mongoSchema";
 import { MapPin, Clock, Users, Plus, Minus, Route, CreditCard, CalendarDays, ArrowLeft, ArrowRight, CheckCircle, Loader2 } from "lucide-react";
 import { useLocation } from "wouter";
 
