@@ -4,6 +4,15 @@ import Stripe from "stripe";
 import { storage } from "./storage";
 import { insertBookingSchema, insertTimeSlotSchema } from "@shared/mongoSchema";
 import { googleCalendarService } from "./googleCalendarService";
+import { 
+  asyncHandler, 
+  sendSuccess, 
+  sendError, 
+  formatBookingResponse, 
+  formatBookingsResponse,
+  validateRequiredFields 
+} from "./utils/responseHelpers";
+import { timeSlotService } from "./services/timeSlotService";
 
 // Optional Stripe setup - allows app to run without Stripe for development
 let stripe: Stripe | null = null;
@@ -39,64 +48,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get time slots for a specific date
-  app.get("/api/timeslots/:date", async (req, res) => {
-    try {
-      const { date } = req.params;
-      let slots = await storage.getTimeSlotsByDate(date);
-      
-      // If no time slots exist, create default ones for today and future dates
-      if (slots.length === 0) {
-        const requestedDate = new Date(date + 'T00:00:00');
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Reset time to beginning of day
-        
-        // Only create slots for today or future dates
-        if (requestedDate >= today) {
-          const defaultSlots = [];
-          
-          // Create slots from 3 PM to 11 PM PT in 15-minute increments
-          for (let hour = 15; hour < 23; hour++) {
-            for (let minute = 0; minute < 60; minute += 15) {
-              const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-              const endHour = minute === 45 ? hour + 1 : hour;
-              const endMinute = minute === 45 ? 0 : minute + 15;
-              const endTimeString = `${endHour.toString().padStart(2, '0')}:${endMinute.toString().padStart(2, '0')}`;
-              
-              defaultSlots.push({
-                date,
-                startTime: timeString,
-                endTime: endTimeString,
-                isAvailable: true
-              });
-            }
-          }
-          
-          // Create all default slots in the database
-          for (const slot of defaultSlots) {
-            await storage.createTimeSlot(slot);
-          }
-          
-          // Fetch the newly created slots
-          slots = await storage.getTimeSlotsByDate(date);
-        }
-      }
-      
-      res.json(slots);
-    } catch (error: any) {
-      res.status(500).json({ message: "Error fetching time slots: " + error.message });
-    }
-  });
+  app.get("/api/timeslots/:date", asyncHandler(async (req, res) => {
+    const { date } = req.params;
+    const slots = await timeSlotService.getOrCreateTimeSlots(date);
+    sendSuccess(res, slots);
+  }));
 
   // Create new time slot (admin only)
-  app.post("/api/timeslots", isAdmin, async (req, res) => {
-    try {
-      const validatedData = insertTimeSlotSchema.parse(req.body);
-      const slot = await storage.createTimeSlot(validatedData);
-      res.json(slot);
-    } catch (error: any) {
-      res.status(400).json({ message: "Error creating time slot: " + error.message });
-    }
-  });
+  app.post("/api/timeslots", isAdmin, asyncHandler(async (req, res) => {
+    const validatedData = insertTimeSlotSchema.parse(req.body);
+    const slot = await storage.createTimeSlot(validatedData);
+    sendSuccess(res, slot);
+  }));
 
   // Update time slot availability (admin only)
   app.patch("/api/timeslots/:id", isAdmin, async (req, res) => {
@@ -154,14 +117,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Return the booking (with or without Cal.com sync)
       const finalBooking = await storage.getBooking((booking as any)._id.toString());
-      
-      // Transform MongoDB _id to id for frontend compatibility
-      const responseBooking = {
-        ...finalBooking?.toJSON(),
-        id: (finalBooking as any)?._id.toString()
-      };
-      
-      res.json(responseBooking);
+      sendSuccess(res, formatBookingResponse(finalBooking));
       
     } catch (error: any) {
       res.status(400).json({ message: "Error creating booking: " + error.message });
@@ -169,60 +125,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get individual booking by ID (for checkout)
-  app.get("/api/bookings/:id", async (req, res) => {
-    try {
-      const id = req.params.id;
-      const booking = await storage.getBooking(id);
-      if (!booking) {
-        return res.status(404).json({ message: "Booking not found" });
-      }
-      
-      // Transform MongoDB _id to id for frontend compatibility
-      const responseBooking = {
-        ...booking.toJSON(),
-        id: (booking as any)._id.toString()
-      };
-      
-      res.json(responseBooking);
-    } catch (error: any) {
-      res.status(500).json({ message: "Error fetching booking: " + error.message });
+  app.get("/api/bookings/:id", asyncHandler(async (req, res) => {
+    const booking = await storage.getBooking(req.params.id);
+    if (!booking) {
+      return sendError(res, "Booking not found", 404);
     }
-  });
+    sendSuccess(res, formatBookingResponse(booking));
+  }));
 
   // Get all bookings (admin only)
-  app.get("/api/bookings", isAdmin, async (req, res) => {
-    try {
-      const bookings = await storage.getBookings();
-      
-      // Transform MongoDB _id to id for frontend compatibility
-      const responseBookings = bookings.map(booking => ({
-        ...booking.toJSON(),
-        id: (booking as any)._id.toString()
-      }));
-      
-      res.json(responseBookings);
-    } catch (error: any) {
-      res.status(500).json({ message: "Error fetching bookings: " + error.message });
-    }
-  });
+  app.get("/api/bookings", isAdmin, asyncHandler(async (req, res) => {
+    const bookings = await storage.getBookings();
+    sendSuccess(res, formatBookingsResponse(bookings));
+  }));
 
   // Get bookings by date
-  app.get("/api/bookings/date/:date", async (req, res) => {
-    try {
-      const { date } = req.params;
-      const bookings = await storage.getBookingsByDate(date);
-      
-      // Transform MongoDB _id to id for frontend compatibility
-      const responseBookings = bookings.map(booking => ({
-        ...booking.toJSON(),
-        id: (booking as any)._id.toString()
-      }));
-      
-      res.json(responseBookings);
-    } catch (error: any) {
-      res.status(500).json({ message: "Error fetching bookings: " + error.message });
-    }
-  });
+  app.get("/api/bookings/date/:date", asyncHandler(async (req, res) => {
+    const bookings = await storage.getBookingsByDate(req.params.date);
+    sendSuccess(res, formatBookingsResponse(bookings));
+  }));
 
   // Manual sync specific booking RC0036-2025 to Google Calendar
   app.post("/api/bookings/36/sync-calendar", async (req, res) => {

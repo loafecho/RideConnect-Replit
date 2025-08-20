@@ -23,7 +23,6 @@ export interface IStorage {
   createBooking(booking: InsertBooking): Promise<IBooking>;
   getBooking(id: string): Promise<IBooking | undefined>;
   getBookings(): Promise<IBooking[]>;
-  getBookingById(id: string): Promise<IBooking | undefined>;
   updateBookingStatus(id: string, status: string, paymentIntentId?: string): Promise<IBooking | undefined>;
   getBookingsByDate(date: string): Promise<IBooking[]>;
   updateBookingGoogleCalendarInfo(
@@ -38,15 +37,32 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  
+  /**
+   * Generic error handler for database operations
+   */
+  private handleError(operation: string, error: any, fallbackValue?: any) {
+    console.error(`Error in ${operation}:`, error);
+    if (fallbackValue !== undefined) {
+      return fallbackValue;
+    }
+    throw error;
+  }
+
+  /**
+   * Generic find by ID with error handling
+   */
+  private async findById<T>(Model: any, id: string, operation: string): Promise<T | undefined> {
+    try {
+      const document = await Model.findById(id);
+      return document || undefined;
+    } catch (error) {
+      return this.handleError(operation, error, undefined);
+    }
+  }
   // User operations (IMPORTANT for Replit Auth)
   async getUser(id: string): Promise<IUser | undefined> {
-    try {
-      const user = await User.findById(id);
-      return user || undefined;
-    } catch (error) {
-      console.error('Error getting user:', error);
-      return undefined;
-    }
+    return this.findById<IUser>(User, id, 'getUser');
   }
 
   async upsertUser(userData: UpsertUser): Promise<IUser> {
@@ -135,18 +151,6 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async updateBookingCalInfo(
-    id: string,
-    calData: {
-      calBookingId?: string;
-      calEventId?: string;
-      calStatus?: string;
-      calSyncedAt?: Date;
-    }
-  ): Promise<IBooking | undefined> {
-    // Cal.com integration deprecated, keeping method for compatibility
-    return undefined;
-  }
 
   async updateBookingGoogleCalendarInfo(
     id: string,
@@ -174,13 +178,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getBooking(id: string): Promise<IBooking | undefined> {
-    try {
-      const booking = await Booking.findById(id);
-      return booking || undefined;
-    } catch (error) {
-      console.error('Error getting booking:', error);
-      return undefined;
-    }
+    return this.findById<IBooking>(Booking, id, 'getBooking');
   }
 
   async getBookings(): Promise<IBooking[]> {
@@ -193,9 +191,6 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getBookingById(id: string): Promise<IBooking | undefined> {
-    return this.getBooking(id);
-  }
 
   async updateBookingStatus(id: string, status: string, paymentIntentId?: string): Promise<IBooking | undefined> {
     try {
