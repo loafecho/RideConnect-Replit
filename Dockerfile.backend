@@ -1,0 +1,36 @@
+# Backend Dockerfile - Express.js API only
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install production dependencies
+COPY package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy server code and shared schemas
+COPY server/ ./server/
+COPY shared/ ./shared/
+
+# Copy tsconfig for runtime (if needed)
+COPY tsconfig.json ./
+
+# Install tsx for running TypeScript in production
+RUN npm install -g tsx
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodeuser -u 1001 -G nodejs
+
+# Change ownership of the app directory
+RUN chown -R nodeuser:nodejs /app
+USER nodeuser
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
+
+# Expose port
+EXPOSE 3000
+
+# Start the backend server
+CMD ["tsx", "server/index.ts"]

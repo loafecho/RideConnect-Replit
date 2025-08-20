@@ -1,0 +1,38 @@
+# External MongoDB configuration (recommended for production)
+# This assumes you're using MongoDB Atlas or another managed MongoDB service
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rideconnect-database-config
+  namespace: rideconnect
+  labels:
+    app.kubernetes.io/name: rideconnect-database
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: rideconnect-platform
+data:
+  database-type: "mongodb"
+  connection-pool-min: "5"
+  connection-pool-max: "20"
+  socket-timeout: "30000"
+  server-selection-timeout: "30000"
+  family: "4"  # Use IPv4
+---
+# External service for MongoDB Atlas or managed MongoDB
+apiVersion: v1
+kind: Service
+metadata:
+  name: rideconnect-mongodb
+  namespace: rideconnect
+  labels:
+    app.kubernetes.io/name: rideconnect-mongodb
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: rideconnect-platform
+spec:
+  type: ExternalName
+  externalName: cluster0.mongodb.net  # Replace with your MongoDB Atlas cluster
+  ports:
+  - port: 27017
+    targetPort: 27017
+    protocol: TCP
+    name: mongodb

@@ -1,0 +1,140 @@
+# PrometheusRule for alerting integration with existing Prometheus
+# These rules will create alerts that integrate with your existing alerting setup
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: rideconnect-alerts
+  namespace: rideconnect
+  labels:
+    app.kubernetes.io/name: rideconnect-alerts
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/part-of: rideconnect-platform
+    # Add label that your existing Prometheus uses to discover rules
+    prometheus: kube-prometheus  # Adjust based on your Prometheus setup
+spec:
+  groups:
+  - name: rideconnect.application
+    interval: 30s
+    rules:
+    # High error rate alert
+    - alert: RideConnectHighErrorRate
+      expr: |
+        (
+          rate(nginx_http_requests_total{service="rideconnect-frontend",status=~"4..|5.."}[5m]) /
+          rate(nginx_http_requests_total{service="rideconnect-frontend"}[5m])
+        ) > 0.05
+      for: 5m
+      labels:
+        severity: warning
+        service: rideconnect-frontend
+        component: frontend
+      annotations:
+        summary: "RideConnect frontend has high error rate"
+        description: "Frontend error rate is {{ $value | humanizePercentage }} for the last 5 minutes"
+        runbook_url: "https://docs.rideconnect.com/runbooks/high-error-rate"
+
+    - alert: RideConnectBackendHighErrorRate
+      expr: |
+        (
+          rate(nodejs_http_requests_total{service="rideconnect-backend",status=~"4..|5.."}[5m]) /
+          rate(nodejs_http_requests_total{service="rideconnect-backend"}[5m])
+        ) > 0.05
+      for: 5m
+      labels:
+        severity: warning
+        service: rideconnect-backend
+        component: backend
+      annotations:
+        summary: "RideConnect backend has high error rate"
+        description: "Backend API error rate is {{ $value | humanizePercentage }} for the last 5 minutes"
+        runbook_url: "https://docs.rideconnect.com/runbooks/api-high-error-rate"
+
+    # High response time alert
+    - alert: RideConnectHighResponseTime
+      expr: |
+        histogram_quantile(0.95,
+          rate(nodejs_http_request_duration_seconds_bucket{service="rideconnect-backend"}[5m])
+        ) > 2
+      for: 5m
+      labels:
+        severity: warning
+        service: rideconnect-backend
+        component: backend
+      annotations:
+        summary: "RideConnect backend has high response time"
+        description: "Backend 95th percentile response time is {{ $value }}s for the last 5 minutes"
+        runbook_url: "https://docs.rideconnect.com/runbooks/high-response-time"
+
+    # Service down alert
+    - alert: RideConnectServiceDown
+      expr: up{job=~"rideconnect-.*"} == 0
+      for: 1m
+      labels:
+        severity: critical
+        service: "{{ $labels.job }}"
+      annotations:
+        summary: "RideConnect service is down"
+        description: "{{ $labels.job }} service has been down for more than 1 minute"
+        runbook_url: "https://docs.rideconnect.com/runbooks/service-down"
+
+    # High memory usage
+    - alert: RideConnectHighMemoryUsage
+      expr: |
+        (
+          nodejs_process_memory_usage_bytes{type="heapUsed",service="rideconnect-backend"} /
+          nodejs_process_memory_usage_bytes{type="heapTotal",service="rideconnect-backend"}
+        ) > 0.9
+      for: 10m
+      labels:
+        severity: warning
+        service: rideconnect-backend
+        component: backend
+      annotations:
+        summary: "RideConnect backend has high memory usage"
+        description: "Backend memory usage is {{ $value | humanizePercentage }} for the last 10 minutes"
+        runbook_url: "https://docs.rideconnect.com/runbooks/high-memory-usage"
+
+    # Pod crash looping
+    - alert: RideConnectPodCrashLooping
+      expr: |
+        rate(kube_pod_container_status_restarts_total{namespace="rideconnect"}[15m]) > 0
+      for: 5m
+      labels:
+        severity: warning
+        service: "{{ $labels.pod }}"
+        component: "{{ $labels.container }}"
+      annotations:
+        summary: "RideConnect pod is crash looping"
+        description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is restarting frequently"
+        runbook_url: "https://docs.rideconnect.com/runbooks/pod-crash-looping"
+
+  - name: rideconnect.business
+    interval: 60s
+    rules:
+    # Business metric alerts
+    - alert: RideConnectLowBookingRate
+      expr: |
+        rate(rideconnect_bookings_total[1h]) < 0.1
+      for: 30m
+      labels:
+        severity: info
+        service: rideconnect-backend
+        component: business
+      annotations:
+        summary: "RideConnect has low booking rate"
+        description: "Booking rate is {{ $value }} per hour for the last 30 minutes"
+        runbook_url: "https://docs.rideconnect.com/runbooks/low-booking-rate"
+
+    - alert: RideConnectDatabaseConnectionFailed
+      expr: |
+        mongodb_connections{state="failed"} > 0
+      for: 2m
+      labels:
+        severity: critical
+        service: rideconnect-backend
+        component: database
+      annotations:
+        summary: "RideConnect database connection failed"
+        description: "Database connection failures detected: {{ $value }}"
+        runbook_url: "https://docs.rideconnect.com/runbooks/database-connection-failed"

@@ -1,0 +1,35 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: rideconnect-backend-binding
+  namespace: rideconnect
+  labels:
+    app.kubernetes.io/name: rideconnect-backend
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: rideconnect-platform
+subjects:
+- kind: ServiceAccount
+  name: rideconnect-backend
+  namespace: rideconnect
+roleRef:
+  kind: Role
+  name: rideconnect-backend-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: rideconnect-monitoring-binding
+  namespace: rideconnect
+  labels:
+    app.kubernetes.io/name: rideconnect-monitoring
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: rideconnect-platform
+subjects:
+- kind: ServiceAccount
+  name: rideconnect-monitoring
+  namespace: rideconnect
+roleRef:
+  kind: Role
+  name: rideconnect-monitoring-role
+  apiGroup: rbac.authorization.k8s.io
