@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { log } from "./vite";
+import { log } from "./utils/logger";
 import { ensurePortOpen } from "./firewall";
 import { diagnostics } from "./startupDiagnostics";
 
@@ -96,7 +96,7 @@ nodejs_process_cpu_usage_seconds{type="system"} ${process.cpuUsage().system / 10
   });
 
   // Backend API only - no static file serving in Kubernetes
-  const port = parseInt(process.env.PORT || '3000', 10);
+  const port = parseInt(process.env.PORT || '3001', 10);
   
   server.listen(port, "0.0.0.0", async () => {
     log(`Backend API server running on port ${port}`);

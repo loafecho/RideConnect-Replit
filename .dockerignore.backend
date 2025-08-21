@@ -1,0 +1,121 @@
+# .dockerignore for RideConnect Backend
+# This file should be copied to .dockerignore when building the backend container
+
+# Frontend files - not needed for backend container
+client/
+dist/public/
+vite.config.ts
+postcss.config.js
+tailwind.config.ts
+components.json
+
+# Development and build artifacts
+node_modules/
+dist/
+.vite/
+build/
+*.log
+logs/
+coverage/
+.nyc_output/
+.turbo/
+.next/
+
+# Test files and reports
+test-results/
+tests/
+playwright-report/
+qa-ux-reports/
+*.spec.ts
+playwright.config.ts
+
+# Git and version control
+.git/
+.gitignore
+.github/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment and config files (will be mounted as secrets)
+.env*
+!.env.example
+
+# Documentation and non-production files
+*.md
+!package.json
+!package-lock.json
+LICENSE
+CHANGELOG*
+docs/
+replit.md
+
+# Docker files (avoid recursive copying)
+Dockerfile*
+docker-compose*
+.dockerignore*
+docker-build-*.sh
+k8s-*.yaml
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Cache directories
+.npm/
+.cache/
+.parcel-cache/
+.eslintcache
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# Service account keys (security)
+*.json
+!package.json
+!package-lock.json
+!tsconfig*.json
+
+# Local development files
+.replit
+replit.nix
+LOCAL_DEPLOYMENT.md
+
+# Database migration files (should be run separately)
+drizzle.config.ts
+
+# Frontend-specific dependencies and build files
+autoprefixer/
+@vitejs/
+@tailwindcss/
+tailwindcss/

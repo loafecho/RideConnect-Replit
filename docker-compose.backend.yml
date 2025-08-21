@@ -1,0 +1,54 @@
+# Docker Compose for RideConnect Backend Testing
+# This file is for local testing of the production backend container
+
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7-jammy
+    container_name: rideconnect-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: rideconnect
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - rideconnect-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend.optimized
+    container_name: rideconnect-backend
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - MONGODB_URI=mongodb://admin:password@mongodb:27017/rideconnect?authSource=admin
+      # Optional Stripe configuration
+      # - STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key_here
+    depends_on:
+      - mongodb
+    networks:
+      - rideconnect-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  rideconnect-network:
+    driver: bridge

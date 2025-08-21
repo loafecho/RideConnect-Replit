@@ -1,0 +1,202 @@
+# Kubernetes deployment manifest for RideConnect Backend
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rideconnect-backend
+  namespace: rideconnect
+  labels:
+    app: rideconnect-backend
+    version: v1.0.0
+    app.kubernetes.io/name: rideconnect-backend
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: api
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: rideconnect-backend
+  template:
+    metadata:
+      labels:
+        app: rideconnect-backend
+        version: v1.0.0
+        app.kubernetes.io/name: rideconnect-backend
+        app.kubernetes.io/version: "1.0.0"
+        app.kubernetes.io/component: api
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3001"
+        prometheus.io/path: "/metrics"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      containers:
+      - name: backend
+        image: localhost:5001/rideconnect-backend:1.0.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3001
+          name: http
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3001"
+        - name: MONGODB_URI
+          valueFrom:
+            secretKeyRef:
+              name: rideconnect-secrets
+              key: mongodb-uri
+        - name: STRIPE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: rideconnect-secrets
+              key: stripe-secret-key
+              optional: true
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3001
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: logs
+          mountPath: /app/logs
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: logs
+        emptyDir: {}
+      terminationGracePeriodSeconds: 30
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rideconnect-backend-service
+  namespace: rideconnect
+  labels:
+    app: rideconnect-backend
+spec:
+  selector:
+    app: rideconnect-backend
+  ports:
+  - name: http
+    port: 80
+    targetPort: 3001
+    protocol: TCP
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rideconnect-secrets
+  namespace: rideconnect
+type: Opaque
+data:
+  # Base64 encoded values - replace with actual values
+  # echo -n "mongodb://user:pass@host:port/db" | base64
+  mongodb-uri: bW9uZ29kYjovL3VzZXI6cGFzc0Bob3N0OnBvcnQvZGI=
+  # echo -n "sk_live_your_stripe_key" | base64
+  stripe-secret-key: c2tfbGl2ZV95b3VyX3N0cmlwZV9rZXk=
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rideconnect
+  labels:
+    name: rideconnect
+
+---
+# Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: rideconnect-backend-hpa
+  namespace: rideconnect
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: rideconnect-backend
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+---
+# Network Policy for security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: rideconnect-backend-netpol
+  namespace: rideconnect
+spec:
+  podSelector:
+    matchLabels:
+      app: rideconnect-backend
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    - namespaceSelector:
+        matchLabels:
+          name: rideconnect
+    ports:
+    - protocol: TCP
+      port: 3001
+  egress:
+  - {} # Allow all outbound traffic (for MongoDB, external APIs)
